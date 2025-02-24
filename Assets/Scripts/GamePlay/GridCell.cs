@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GridCell : MonoBehaviour {
     [Header("Visuals")]
-    [SerializeField] private List<SpriteRenderer> monstersSprites;
+    [SerializeField] private List<GameObject> monstersSprites;
     [SerializeField] private SpriteRenderer BGColor;
     [SerializeField] private Color highlightColor = Color.yellow;
     [SerializeField] private Color leftClickColor = Color.green;
@@ -57,25 +57,16 @@ public class GridCell : MonoBehaviour {
 
     public void SetType(CellType newType) {
         CurrentType = newType;
+        SetCellSprite();
     }
 
     private void SetCellSprite() {
-        //switch para o tipo de monstros
-        switch (CurrentType) {
-            case CellType.Slime:
-            monstersSprites[0].enabled = true;
-            break;
-            case CellType.Goblin:
-            monstersSprites[1].enabled = true;
-            break;
-            case CellType.Orc:
-            monstersSprites[2].enabled = true;
-            break;
-            case CellType.Soldier:
-            monstersSprites[3].enabled = true;
-            break;
-            default:
-            break;
+        foreach (GameObject monsterSprite in monstersSprites) {
+            if (monsterSprite.name == CurrentType.ToString()) {
+                monsterSprite.SetActive(true);
+            } else {
+                monsterSprite.SetActive(false);
+            }
         }
     }
 

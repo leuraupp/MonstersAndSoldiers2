@@ -487,7 +487,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0506a76eb4a48a14087a986ced4a2cdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  monstersSprites: []
+  monstersSprites:
+  - {fileID: 1986445969153075641}
+  - {fileID: 2823262226412917788}
+  - {fileID: 1773798895549946709}
   BGColor: {fileID: 702110222659514343}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   leftClickColor: {r: 0, g: 1, b: 0, a: 1}

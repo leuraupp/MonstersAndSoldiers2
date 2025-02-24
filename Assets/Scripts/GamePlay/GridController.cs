@@ -28,32 +28,12 @@ public class GridController : MonoBehaviour {
     public void GenerateGrid(LevelData levelData) {
         currentLevel = levelData;
         CalculateBoardBounds();
-        gridView.InitializeGrid(levelData.rows, levelData.columns, boardBounds, margin, spacing);
-        PlaceMonsters(levelData.monsterPlacements);
+        gridView.InitializeGrid(levelData.rows, levelData.columns, levelData.monsterPlacements, boardBounds, margin, spacing);
     }
 
     private void CalculateBoardBounds() {
         BoxCollider2D collider = board.GetComponent<BoxCollider2D>();
         boardBounds = collider.bounds;
-    }
-
-    private void PlaceMonsters(List<MonsterPlacement> monsters) {
-        foreach (MonsterPlacement monster in monsters) {
-            gridView.UpdateCellVisual(
-                monster.gridPosition.y,
-                monster.gridPosition.x,
-                MonsterTypeToCellType(monster.monsterType)
-            );
-        }
-    }
-
-    private CellType MonsterTypeToCellType(MonsterType monsterType) {
-        return monsterType switch {
-            MonsterType.Slime => CellType.Slime,
-            MonsterType.Goblin => CellType.Goblin,
-            MonsterType.Orc => CellType.Orc,
-            _ => CellType.Empty
-        };
     }
 
     private int GetRequiredSoldiers(MonsterType monsterType) {

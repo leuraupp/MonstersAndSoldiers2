@@ -726,8 +726,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridView: {fileID: 650402620}
   board: {fileID: 2079792673}
-  margin: 0.1
-  spacing: 0.1
+  margin: 0.2
+  spacing: 0.2
 --- !u!1 &1319413399
 GameObject:
   m_ObjectHideFlags: 0

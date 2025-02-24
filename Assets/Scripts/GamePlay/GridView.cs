@@ -1,6 +1,7 @@
 // Scripts/Gameplay/GridView.cs
 using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
 
 public class GridView : MonoBehaviour {
     [Header("References")]
@@ -18,7 +19,7 @@ public class GridView : MonoBehaviour {
     private float cellSize;
     private float spacing;
 
-    public void InitializeGrid(int rows, int cols, Bounds boardBounds, float margin, float spacing) {
+    public void InitializeGrid(int rows, int cols, List<MonsterPlacement> monsters, Bounds boardBounds, float margin, float spacing) {
         this.spacing = spacing;
 
         // Calcula tamanho das células
@@ -55,9 +56,36 @@ public class GridView : MonoBehaviour {
                 cell.transform.DOScale(scaleFactor, 0.2f).SetDelay(delayOffset);
 
                 cell.Initialize(emptyColor);
+                cell.SetType(CellType.Empty);
+                foreach (MonsterPlacement monster in monsters) {
+                    if (monster.gridPosition == new Vector2Int(row, col)) {
+                        Debug.Log("Setting monster");
+                        cell.SetColor(MonsterTypeToColor(monster.monsterType));
+                        cell.SetType(MonsterTypeToCellType(monster.monsterType));
+                    }
+                }
+
                 cells[row, col] = cell;
             }
         }
+    }
+
+    private CellType MonsterTypeToCellType(MonsterType monsterType) {
+        return monsterType switch {
+            MonsterType.Slime => CellType.Slime,
+            MonsterType.Goblin => CellType.Goblin,
+            MonsterType.Orc => CellType.Orc,
+            _ => CellType.Empty
+        };
+    }
+
+    private Color MonsterTypeToColor(MonsterType monsterType) {
+        return monsterType switch {
+            MonsterType.Slime => slimeColor,
+            MonsterType.Goblin => goblinColor,
+            MonsterType.Orc => orcColor,
+            _ => emptyColor
+        };
     }
 
     public void UpdateCellVisual(int row, int col, CellType type) {

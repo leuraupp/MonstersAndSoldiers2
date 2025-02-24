@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GridCell : MonoBehaviour {
     [Header("Visuals")]
-    [SerializeField] private List<GameObject> monstersSprites;
+    [SerializeField] private List<GameObject> sprites;
     [SerializeField] private SpriteRenderer BGColor;
     [SerializeField] private Color highlightColor = Color.yellow;
     [SerializeField] private Color leftClickColor = Color.green;
@@ -61,11 +61,11 @@ public class GridCell : MonoBehaviour {
     }
 
     private void SetCellSprite() {
-        foreach (GameObject monsterSprite in monstersSprites) {
-            if (monsterSprite.name == CurrentType.ToString()) {
-                monsterSprite.SetActive(true);
+        foreach (GameObject sprite in sprites) {
+            if (sprite.name == CurrentType.ToString()) {
+                sprite.SetActive(true);
             } else {
-                monsterSprite.SetActive(false);
+                sprite.SetActive(false);
             }
         }
     }
@@ -86,8 +86,10 @@ public class GridCell : MonoBehaviour {
         isSelected = !isSelected;
         if (isSelected) {
             BGColor.color = leftClickColor;
+            SetType(CellType.Soldier);
         } else {
             BGColor.color = highlightColor;
+            SetType(CellType.Empty);
         }
         
     }

@@ -21,4 +21,7 @@ public class LevelData : ScriptableObject {
     [Header("Visuals")]
     public Sprite backgroundSprite;
     public Color backgroundColor = Color.white;
+
+    [Header("Soldiers")]
+    public int initialSoldiers = 5;
 }

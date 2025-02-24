@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c20713abfbd794e4aa32e0b6aefc5fed, type: 3}
   m_Name: Level_01
   m_EditorClassIdentifier: 
-  levelName: Level_01
+  levelName: Level_01_test
   levelID: 0
   rows: 5
   columns: 5
@@ -25,3 +25,4 @@ MonoBehaviour:
     gridPosition: {x: 4, y: 4}
   backgroundSprite: {fileID: 0}
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
+  initialSoldiers: 5

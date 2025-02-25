@@ -19,6 +19,7 @@ public class GridCell : MonoBehaviour {
     private Color originalColor;
     private bool isMouseOver;
     private bool isSelected = false;
+    private Vector2Int gridPosition;
 
 
     void Start() {
@@ -58,6 +59,16 @@ public class GridCell : MonoBehaviour {
     public void SetType(CellType newType) {
         CurrentType = newType;
         SetCellSprite();
+        if (newType == CellType.Soldier) {
+            GridController.Instance.TryPlaceSoldier(gridPosition);
+        } else {
+            GridController.Instance.TryRemoveSoldier(gridPosition);
+        }
+        name = newType.ToString() + " " + gridPosition;
+    }
+
+    public void SetGridPosition(Vector2Int position) {
+        gridPosition = position;
     }
 
     private void SetCellSprite() {

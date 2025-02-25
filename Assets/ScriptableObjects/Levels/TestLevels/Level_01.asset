@@ -19,10 +19,10 @@ MonoBehaviour:
   monsterPlacements:
   - monsterType: 0
     gridPosition: {x: 0, y: 0}
-  - monsterType: 1
+  - monsterType: 0
     gridPosition: {x: 2, y: 2}
-  - monsterType: 2
+  - monsterType: 0
     gridPosition: {x: 4, y: 4}
   backgroundSprite: {fileID: 0}
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
-  initialSoldiers: 5
+  maxSoldiers: 3

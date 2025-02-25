@@ -16,6 +16,20 @@ public class GridController : MonoBehaviour {
     private GridData currentGrid;
     private Bounds boardBounds;
     private LevelData currentLevel;
+    private List<Vector2Int> soldierPositions = new List<Vector2Int>();
+
+    //get set currentLevel
+    public LevelData CurrentLevel {
+        get => currentLevel;
+    }
+
+    public List<Vector2Int> SoldierPositions {
+        get => soldierPositions;
+    }
+
+    public int RemainingSoldiers {
+        get => currentLevel.maxSoldiers - soldierPositions.Count;
+    }
 
     void Awake() {
         if (Instance == null) {
@@ -36,7 +50,7 @@ public class GridController : MonoBehaviour {
         boardBounds = collider.bounds;
     }
 
-    private int GetRequiredSoldiers(MonsterType monsterType) {
+    public int GetRequiredSoldiers(MonsterType monsterType) {
         return monsterType switch {
             MonsterType.Slime => 1,
             MonsterType.Goblin => 2,
@@ -50,8 +64,11 @@ public class GridController : MonoBehaviour {
                col >= 0 && col < currentGrid.columns;
     }
 
-    public bool TryPlaceSoldier(Vector2Int gridPosition) {
-        // Implementaremos na próxima etapa
-        return true;
+    public void TryPlaceSoldier(Vector2Int gridPosition) {
+        soldierPositions.Add(gridPosition);
+    }
+
+    public void TryRemoveSoldier(Vector2Int gridPosition) {
+        soldierPositions.Remove(gridPosition);
     }
 }

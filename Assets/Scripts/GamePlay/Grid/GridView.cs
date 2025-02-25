@@ -56,6 +56,7 @@ public class GridView : MonoBehaviour {
                 cell.transform.DOScale(scaleFactor, 0.2f).SetDelay(delayOffset);
 
                 cell.Initialize(emptyColor);
+                cell.SetGridPosition(new Vector2Int(row, col));
                 cell.SetType(CellType.Empty);
                 foreach (MonsterPlacement monster in monsters) {
                     if (monster.gridPosition == new Vector2Int(row, col)) {
@@ -86,35 +87,5 @@ public class GridView : MonoBehaviour {
             MonsterType.Orc => orcColor,
             _ => emptyColor
         };
-    }
-
-    public void UpdateCellVisual(int row, int col, CellType type) {
-        if (!IsValidPosition(row, col))
-            return;
-
-        Color color = type switch {
-            CellType.Slime => slimeColor,
-            CellType.Goblin => goblinColor,
-            CellType.Orc => orcColor,
-            CellType.Soldier => soldierColor,
-            _ => emptyColor
-        };
-
-        cells[row, col].SetColor(color);
-    }
-
-    public bool TrySetCellType(Vector2Int gridPosition, CellType newType) {
-        if (!IsValidPosition(gridPosition.y, gridPosition.x))
-            return false;
-        if (cells[gridPosition.y, gridPosition.x].CurrentType != CellType.Empty)
-            return false;
-
-        UpdateCellVisual(gridPosition.y, gridPosition.x, newType);
-        return true;
-    }
-
-    private bool IsValidPosition(int row, int col) {
-        return row >= 0 && row < cells.GetLength(0) &&
-               col >= 0 && col < cells.GetLength(1);
     }
 }

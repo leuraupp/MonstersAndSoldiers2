@@ -23,5 +23,5 @@ public class LevelData : ScriptableObject {
     public Color backgroundColor = Color.white;
 
     [Header("Soldiers")]
-    public int initialSoldiers = 5;
+    public int maxSoldiers = 5;
 }

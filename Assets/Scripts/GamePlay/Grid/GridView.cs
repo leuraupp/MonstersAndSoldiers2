@@ -67,6 +67,7 @@ public class GridView : MonoBehaviour {
                 }
 
                 cells[row, col] = cell;
+                delayOffset += 0.01f;
             }
         }
     }

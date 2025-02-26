@@ -88,4 +88,12 @@ public class GridView : MonoBehaviour {
             _ => emptyColor
         };
     }
+
+    public void SetCellColor(Vector2Int gridPosition, Color color) {
+        cells[gridPosition.x, gridPosition.y].SetColor(color);
+    }
+
+    public void SetInvalidCell(Vector2Int gridPosition) {
+        cells[gridPosition.x, gridPosition.y].FlashRed();
+    }
 }

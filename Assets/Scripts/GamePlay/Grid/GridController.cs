@@ -71,4 +71,18 @@ public class GridController : MonoBehaviour {
     public void TryRemoveSoldier(Vector2Int gridPosition) {
         soldierPositions.Remove(gridPosition);
     }
+
+    public void HighlightInvalidSoldiers(HashSet<Vector2Int> invalidSoldiers) {
+        foreach (var pos in invalidSoldiers) {
+            gridView.SetInvalidCell(pos);
+        }
+    }
+    public void HighlightUnsatisfiedMonsters(HashSet<Vector2Int> unsatisfiedMonsters) {
+        foreach (var pos in unsatisfiedMonsters) {
+            gridView.SetInvalidCell(pos);
+        }
+    }
+    public void ShowSoldierLimitExceededMessage() {
+        Debug.Log("Limite de soldados excedido!");
+    }
 }

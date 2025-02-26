@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -112,6 +113,14 @@ public class GridCell : MonoBehaviour {
         } else {
             BGColor.color = highlightColor;
         }
+    }
+
+    public void FlashRed() {
+        BGColor.DOColor(new Color(152f / 255f, 54f / 255f, 54f / 255f), 0.3f).SetLoops(2, LoopType.Yoyo);
+    }
+
+    private void ResetColor() {
+        BGColor.color = originalColor;
     }
 
 }

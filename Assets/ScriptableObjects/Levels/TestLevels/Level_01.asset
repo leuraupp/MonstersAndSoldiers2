@@ -14,15 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelName: Level_01_test
   levelID: 0
-  rows: 5
-  columns: 5
+  rows: 4
+  columns: 4
   monsterPlacements:
   - monsterType: 0
     gridPosition: {x: 0, y: 0}
   - monsterType: 0
-    gridPosition: {x: 2, y: 2}
+    gridPosition: {x: 1, y: 2}
   - monsterType: 0
-    gridPosition: {x: 4, y: 4}
+    gridPosition: {x: 3, y: 2}
+  - monsterType: 0
+    gridPosition: {x: 3, y: 0}
   backgroundSprite: {fileID: 0}
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
-  maxSoldiers: 3
+  maxSoldiers: 4

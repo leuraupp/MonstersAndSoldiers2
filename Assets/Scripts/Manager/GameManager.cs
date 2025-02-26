@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -12,24 +13,44 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void ValidateAttack() {
-        bool allValid = true;
+    public void OnAttackButtonPressed() {
+        ValidationResult result = ValidateAttack();
 
-        foreach (var monster in GridController.Instance.CurrentLevel.monsterPlacements) {
-            int required = GridController.Instance.GetRequiredSoldiers(monster.monsterType);
-            int current = CountAdjacentSoldiers(monster.gridPosition);
+        if (result.IsValid) {
+            WinGame();
+        } else {
+            UIManager.Instance.ShowValidationResults(result.invalidSoldiers, result.unsatisfiedMonsters, result.soldierLimitExceeded);
+        }
+    }
 
-            Debug.Log($"Monster {monster.monsterType} at {monster.gridPosition} requires {required} soldiers, but has {current}");
-            if (current < required) {
-                allValid = false;
+    private ValidationResult ValidateAttack() {
+        var result = new ValidationResult();
+        result.invalidSoldiers = new HashSet<Vector2Int>();
+        result.unsatisfiedMonsters = new HashSet<Vector2Int>();
+
+        var soldierPositions = GridController.Instance.SoldierPositions;
+
+        foreach (var soldier in soldierPositions) {
+            foreach (var dir in allDirections) {
+                if (soldierPositions.Contains(soldier + dir)) {
+                    result.invalidSoldiers.Add(soldier);
+                    result.invalidSoldiers.Add(soldier + dir);
+                }
             }
         }
 
-        if (allValid && GridController.Instance.SoldierPositions.Count == GridController.Instance.CurrentLevel.maxSoldiers) {
-            WinGame();
-        } else {
-            FailGame();
+        var monsterPlacements = GridController.Instance.CurrentLevel.monsterPlacements;
+
+        foreach (var monster in monsterPlacements) {
+            int count = CountAdjacentSoldiers(monster.gridPosition);
+            if (count < GridController.Instance.GetRequiredSoldiers(monster.monsterType)) {
+                result.unsatisfiedMonsters.Add(monster.gridPosition);
+            }
         }
+
+        result.soldierLimitExceeded = soldierPositions.Count > GridController.Instance.CurrentLevel.maxSoldiers;
+
+        return result;
     }
 
     private int CountAdjacentSoldiers(Vector2Int center) {
@@ -52,5 +73,19 @@ public class GameManager : MonoBehaviour
 
     private void FailGame() {
         Debug.Log("You lose!");
+    }
+
+    private readonly Vector2Int[] allDirections = {
+    Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
+    new Vector2Int(1,1), new Vector2Int(-1,-1), new Vector2Int(1,-1), new Vector2Int(-1,1)
+};
+
+    public struct ValidationResult {
+        public HashSet<Vector2Int> invalidSoldiers;
+        public HashSet<Vector2Int> unsatisfiedMonsters;
+        public bool soldierLimitExceeded;
+        public bool IsValid => invalidSoldiers != null && invalidSoldiers.Count == 0 &&
+                              unsatisfiedMonsters != null && unsatisfiedMonsters.Count == 0 &&
+                              !soldierLimitExceeded;
     }
 }

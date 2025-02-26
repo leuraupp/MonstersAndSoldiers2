@@ -56,10 +56,12 @@ public class GridController : MonoBehaviour {
         if (nextGrid != null) {
             Destroy(nextGrid.gameObject);
         }
+        
         nextGrid = Instantiate(GridViewPrefab, gridParent);
         nextGrid.transform.position = new Vector3(transitionDistance, 0, 0);
         currentGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), 0.5f);
         nextGrid.transform.DOMove(finalPosition, 0.5f).OnComplete(() => {
+            soldierPositions = new List<Vector2Int>();
             Destroy(currentGrid.gameObject);
             nextGrid.InitializeGrid(nextLevel.rows, nextLevel.columns, nextLevel.monsterPlacements, nextGrid.GetComponent<BoxCollider2D>().bounds, margin, spacing);
             currentGrid = nextGrid;

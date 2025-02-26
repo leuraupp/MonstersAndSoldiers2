@@ -95,6 +95,9 @@ public class GridCell : MonoBehaviour {
     }
 
     private void OnLeftClick() {
+        if (CurrentType != CellType.Empty && CurrentType != CellType.Soldier) {
+            return;
+        }
         isSelected = !isSelected;
         if (isSelected) {
             BGColor.color = leftClickColor;
@@ -107,6 +110,9 @@ public class GridCell : MonoBehaviour {
     }
 
     private void OnRightClick() {
+        if (CurrentType != CellType.Empty && CurrentType != CellType.Soldier) {
+            return;
+        }
         isSelected = !isSelected;
         if (isSelected) {
             BGColor.color = rightClickColor;

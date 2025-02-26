@@ -69,6 +69,7 @@ public class GameManager : MonoBehaviour
 
     private void WinGame() {
         Debug.Log("You win!");
+        LevelManager.Instance.LoadNextGrid();
     }
 
     private void FailGame() {

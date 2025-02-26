@@ -1,22 +1,25 @@
 // Scripts/Managers/GridController.cs
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class GridController : MonoBehaviour {
     public static GridController Instance;
 
     [Header("References")]
-    [SerializeField] private GridView gridView;
-    [SerializeField] private GameObject board;
+    [SerializeField] private GridView GridViewPrefab;
+    [SerializeField] private Transform gridParent;
 
     [Header("Settings")]
     [SerializeField] private float margin = 0.5f;
     [SerializeField] private float spacing = 0.2f;
+    [SerializeField] private float transitionDistance = 25f;
 
-    private GridData currentGrid;
-    private Bounds boardBounds;
+    private GridView currentGrid;
+    private GridView nextGrid;
     private LevelData currentLevel;
     private List<Vector2Int> soldierPositions = new List<Vector2Int>();
+    private Vector3 finalPosition;
 
     //get set currentLevel
     public LevelData CurrentLevel {
@@ -41,13 +44,28 @@ public class GridController : MonoBehaviour {
 
     public void GenerateGrid(LevelData levelData) {
         currentLevel = levelData;
-        CalculateBoardBounds();
-        gridView.InitializeGrid(levelData.rows, levelData.columns, levelData.monsterPlacements, boardBounds, margin, spacing);
+        if (currentGrid != null) {
+            Destroy(currentGrid.gameObject);
+        }
+        currentGrid = Instantiate(GridViewPrefab, gridParent);
+        currentGrid.InitializeGrid(levelData.rows, levelData.columns, levelData.monsterPlacements, currentGrid.GetComponent<BoxCollider2D>().bounds, margin, spacing);
+        finalPosition = currentGrid.transform.position;
     }
 
-    private void CalculateBoardBounds() {
-        BoxCollider2D collider = board.GetComponent<BoxCollider2D>();
-        boardBounds = collider.bounds;
+    public void TransitionToNextGrid(LevelData nextLevel) {
+        if (nextGrid != null) {
+            Destroy(nextGrid.gameObject);
+        }
+        nextGrid = Instantiate(GridViewPrefab, gridParent);
+        nextGrid.transform.position = new Vector3(transitionDistance, 0, 0);
+        currentGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), 0.5f);
+        nextGrid.transform.DOMove(finalPosition, 0.5f).OnComplete(() => {
+            Destroy(currentGrid.gameObject);
+            nextGrid.InitializeGrid(nextLevel.rows, nextLevel.columns, nextLevel.monsterPlacements, nextGrid.GetComponent<BoxCollider2D>().bounds, margin, spacing);
+            currentGrid = nextGrid;
+            nextGrid = null;
+            currentLevel = nextLevel;
+        });
     }
 
     public int GetRequiredSoldiers(MonsterType monsterType) {
@@ -57,11 +75,6 @@ public class GridController : MonoBehaviour {
             MonsterType.Orc => 3,
             _ => 0
         };
-    }
-
-    private bool IsValidPosition(int row, int col) {
-        return row >= 0 && row < currentGrid.rows &&
-               col >= 0 && col < currentGrid.columns;
     }
 
     public void TryPlaceSoldier(Vector2Int gridPosition) {
@@ -74,12 +87,12 @@ public class GridController : MonoBehaviour {
 
     public void HighlightInvalidSoldiers(HashSet<Vector2Int> invalidSoldiers) {
         foreach (var pos in invalidSoldiers) {
-            gridView.SetInvalidCell(pos);
+            currentGrid.SetInvalidCell(pos);
         }
     }
     public void HighlightUnsatisfiedMonsters(HashSet<Vector2Int> unsatisfiedMonsters) {
         foreach (var pos in unsatisfiedMonsters) {
-            gridView.SetInvalidCell(pos);
+            currentGrid.SetInvalidCell(pos);
         }
     }
     public void ShowSoldierLimitExceededMessage() {

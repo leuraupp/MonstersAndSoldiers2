@@ -29,6 +29,11 @@ public class LevelManager : MonoBehaviour {
         // Implemente a lógica de carregamento aqui
     }
 
+    public void LoadNextGrid() {
+        currentLevelIndex = (currentLevelIndex + 1) % allLevels.Length;
+        GridController.Instance.TransitionToNextGrid(GetCurrentLevel());
+    }
+
     public void ReloadCurrentLevel() {
         // Implemente recarregamento
     }

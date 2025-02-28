@@ -179,9 +179,7 @@ public class GridCell : MonoBehaviour {
         if (adjacentMonsters.Count > 0) {
             // Escolhe o primeiro monstro na lista como referência
             Vector2Int targetPosition = adjacentMonsters[0].gridPosition;
-            //soldierCell.SetFaceDirection(DetermineFaceDirection(targetPosition));
-            Debug.Log("targetPosition: " + targetPosition);
-            Debug.Log("Soldier " + gridPosition + " facing " + DetermineFaceDirection(gridPosition, targetPosition));
+            FaceDirectionAnimation(DetermineFaceDirection(gridPosition, targetPosition));
         }
     }
 
@@ -191,7 +189,6 @@ public class GridCell : MonoBehaviour {
         foreach (GridCell monsterCell in nearbyMonsters) {
             //monsterCell.SetFaceDirection(DetermineFaceDirection(soldierCell.GridPosition));
             FaceDirection direction = DetermineFaceDirection(monsterCell.gridPosition, gridPosition);
-            Debug.Log("Monster " + monsterCell.gridPosition + " facing " + direction);
             monsterCell.FaceDirectionAnimation(direction);
         }
     }

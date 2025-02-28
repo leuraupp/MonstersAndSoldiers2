@@ -97,4 +97,8 @@ public class GridView : MonoBehaviour {
     public void SetInvalidCell(Vector2Int gridPosition) {
         cells[gridPosition.x, gridPosition.y].FlashRed();
     }
+
+    public GridCell GetCellAtPosition(Vector2Int gridPosition) {
+        return cells[gridPosition.x, gridPosition.y];
+    }
 }

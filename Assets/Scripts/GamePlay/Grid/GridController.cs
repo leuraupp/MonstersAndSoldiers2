@@ -34,6 +34,10 @@ public class GridController : MonoBehaviour {
         get => currentLevel.maxSoldiers - soldierPositions.Count;
     }
 
+    public GridView CurrentGrid {
+        get => currentGrid;
+    }
+
     void Awake() {
         if (Instance == null) {
             Instance = this;
@@ -99,5 +103,9 @@ public class GridController : MonoBehaviour {
     }
     public void ShowSoldierLimitExceededMessage() {
         Debug.Log("Limite de soldados excedido!");
+    }
+
+    public bool IsValidPosition(Vector2Int position) {
+        return position.x >= 0 && position.x < currentLevel.rows && position.y >= 0 && position.y < currentLevel.columns;
     }
 }

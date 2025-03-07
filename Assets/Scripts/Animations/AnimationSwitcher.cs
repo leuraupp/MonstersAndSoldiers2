@@ -10,7 +10,7 @@ public class AnimationSwitcher : MonoBehaviour
 
     void Awake() {
         animator = GetComponent<Animator>();
-        SetWalkController(); // Estado inicial
+        SetAttackController(); // Estado inicial
     }
 
     public void SetWalkController() {

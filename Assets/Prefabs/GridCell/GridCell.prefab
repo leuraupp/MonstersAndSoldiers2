@@ -524,13 +524,14 @@ GameObject:
   - component: {fileID: 3910833579550414074}
   - component: {fileID: 4915375982965099319}
   - component: {fileID: 5599125359761766437}
+  - component: {fileID: 7345445044909568177}
   m_Layer: 6
   m_Name: Soldier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3910833579550414074
 Transform:
   m_ObjectHideFlags: 0
@@ -540,7 +541,7 @@ Transform:
   m_GameObject: {fileID: 6028817256958656443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.091, z: 0}
+  m_LocalPosition: {x: 0, y: 0.09, z: 0}
   m_LocalScale: {x: 3.1588376, y: 3.1588376, z: 3.1588376}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -611,7 +612,7 @@ Animator:
   m_GameObject: {fileID: 6028817256958656443}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 4dbd479268511f648adb89b026ed0890, type: 2}
+  m_Controller: {fileID: 9100000, guid: 991ba7d3b73eb6149b19e1f11dce9b93, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -623,3 +624,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7345445044909568177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6028817256958656443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4775538da46085543a17e99a45be6e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkController: {fileID: 9100000, guid: 4dbd479268511f648adb89b026ed0890, type: 2}
+  attackController: {fileID: 9100000, guid: 991ba7d3b73eb6149b19e1f11dce9b93, type: 2}

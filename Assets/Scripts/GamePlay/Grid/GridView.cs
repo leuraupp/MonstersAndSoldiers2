@@ -101,4 +101,26 @@ public class GridView : MonoBehaviour {
     public GridCell GetCellAtPosition(Vector2Int gridPosition) {
         return cells[gridPosition.x, gridPosition.y];
     }
+
+    private List<GridCell> GetNonEmptyCells() {
+        List<GridCell> nonEmptyCells = new List<GridCell>();
+        foreach (GridCell cell in cells) {
+            if (cell.CurrentType != CellType.Empty) {
+                nonEmptyCells.Add(cell);
+            }
+        }
+        return nonEmptyCells;
+    }
+
+    public void ShowAttackAnimation() {
+        List<GridCell> cells = GetNonEmptyCells();
+        Debug.Log("Showing attack animation");
+        Debug.Log(cells.Count);
+
+        foreach (GridCell cell in cells) {
+            Debug.Log("cell.CurrentType.ToString(): " + cell.CurrentType.ToString());
+            Debug.Log("cell.CurrentFaceDirection.ToString(): " + cell.CurrentFaceDirection.ToString());
+            cell.AnimationSwitcher.AnimationPlay("Attack", cell.CurrentType.ToString(), cell.CurrentFaceDirection.ToString());
+        }
+    }
 }

@@ -108,4 +108,8 @@ public class GridController : MonoBehaviour {
     public bool IsValidPosition(Vector2Int position) {
         return position.x >= 0 && position.x < currentLevel.rows && position.y >= 0 && position.y < currentLevel.columns;
     }
+
+    public void ShowAttackAnimation() {
+        currentGrid.ShowAttackAnimation();
+    }
 }

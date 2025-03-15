@@ -94,7 +94,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -132,7 +132,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -186,10 +186,10 @@ TextureImporter:
       name: Paladin_attack_0
       rect:
         serializedVersion: 2
-        x: 14
-        y: 191
-        width: 19
-        height: 26
+        x: 0
+        y: 168
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -208,10 +208,10 @@ TextureImporter:
       name: Paladin_attack_1
       rect:
         serializedVersion: 2
-        x: 58
-        y: 178
-        width: 23
-        height: 34
+        x: 48
+        y: 168
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -230,10 +230,10 @@ TextureImporter:
       name: Paladin_attack_2
       rect:
         serializedVersion: 2
-        x: 111
-        y: 181
-        width: 18
-        height: 31
+        x: 96
+        y: 168
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -252,10 +252,10 @@ TextureImporter:
       name: Paladin_attack_3
       rect:
         serializedVersion: 2
-        x: 159
-        y: 184
-        width: 18
-        height: 28
+        x: 144
+        y: 168
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -274,10 +274,10 @@ TextureImporter:
       name: Paladin_attack_4
       rect:
         serializedVersion: 2
-        x: 207
-        y: 186
-        width: 18
-        height: 26
+        x: 192
+        y: 168
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -296,10 +296,10 @@ TextureImporter:
       name: Paladin_attack_5
       rect:
         serializedVersion: 2
-        x: 17
-        y: 135
-        width: 19
-        height: 22
+        x: 0
+        y: 112
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -318,10 +318,10 @@ TextureImporter:
       name: Paladin_attack_6
       rect:
         serializedVersion: 2
-        x: 47
-        y: 130
-        width: 33
-        height: 30
+        x: 48
+        y: 112
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -340,10 +340,10 @@ TextureImporter:
       name: Paladin_attack_7
       rect:
         serializedVersion: 2
-        x: 102
-        y: 130
-        width: 26
-        height: 26
+        x: 96
+        y: 112
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -362,10 +362,10 @@ TextureImporter:
       name: Paladin_attack_8
       rect:
         serializedVersion: 2
-        x: 153
-        y: 130
-        width: 23
-        height: 26
+        x: 144
+        y: 112
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -384,10 +384,10 @@ TextureImporter:
       name: Paladin_attack_9
       rect:
         serializedVersion: 2
-        x: 205
-        y: 130
-        width: 19
-        height: 26
+        x: 192
+        y: 112
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -406,10 +406,10 @@ TextureImporter:
       name: Paladin_attack_10
       rect:
         serializedVersion: 2
-        x: 12
-        y: 79
-        width: 19
-        height: 22
+        x: 0
+        y: 56
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -428,10 +428,10 @@ TextureImporter:
       name: Paladin_attack_11
       rect:
         serializedVersion: 2
-        x: 64
-        y: 74
-        width: 33
-        height: 30
+        x: 48
+        y: 56
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -450,10 +450,10 @@ TextureImporter:
       name: Paladin_attack_12
       rect:
         serializedVersion: 2
-        x: 112
-        y: 74
-        width: 26
-        height: 26
+        x: 96
+        y: 56
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -472,10 +472,10 @@ TextureImporter:
       name: Paladin_attack_13
       rect:
         serializedVersion: 2
-        x: 160
-        y: 74
-        width: 23
-        height: 26
+        x: 144
+        y: 56
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -494,10 +494,10 @@ TextureImporter:
       name: Paladin_attack_14
       rect:
         serializedVersion: 2
-        x: 208
-        y: 74
-        width: 19
-        height: 26
+        x: 192
+        y: 56
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -516,10 +516,10 @@ TextureImporter:
       name: Paladin_attack_15
       rect:
         serializedVersion: 2
-        x: 15
-        y: 23
-        width: 19
-        height: 26
+        x: 0
+        y: 0
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -538,10 +538,10 @@ TextureImporter:
       name: Paladin_attack_16
       rect:
         serializedVersion: 2
-        x: 58
-        y: 23
-        width: 27
-        height: 34
+        x: 48
+        y: 0
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -560,10 +560,10 @@ TextureImporter:
       name: Paladin_attack_17
       rect:
         serializedVersion: 2
-        x: 106
-        y: 23
-        width: 24
-        height: 24
+        x: 96
+        y: 0
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -582,10 +582,10 @@ TextureImporter:
       name: Paladin_attack_18
       rect:
         serializedVersion: 2
-        x: 154
-        y: 23
-        width: 24
-        height: 21
+        x: 144
+        y: 0
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -604,10 +604,10 @@ TextureImporter:
       name: Paladin_attack_19
       rect:
         serializedVersion: 2
-        x: 202
-        y: 23
-        width: 24
-        height: 21
+        x: 192
+        y: 0
+        width: 48
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -626,7 +626,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 800cc5643a5da5c41a9b2d3277a8d03b
     internalID: 0
     vertices: []
     indices: 
@@ -635,7 +635,27 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Paladin_attack_0: 6105221573439621377
+      Paladin_attack_1: -4420446214191368344
+      Paladin_attack_10: 5442613465257728974
+      Paladin_attack_11: 1039037969208606489
+      Paladin_attack_12: 7341599216120226892
+      Paladin_attack_13: -2223495202838035163
+      Paladin_attack_14: -8168282193831267750
+      Paladin_attack_15: 178780460345117877
+      Paladin_attack_16: 2447379141302760383
+      Paladin_attack_17: -7439430597525397307
+      Paladin_attack_18: -4210773934345164265
+      Paladin_attack_19: -6986191117954494871
+      Paladin_attack_2: 4124823819654213142
+      Paladin_attack_3: -1561757559193127502
+      Paladin_attack_4: 375098912462190310
+      Paladin_attack_5: -5290035581453366028
+      Paladin_attack_6: 5960023233288429893
+      Paladin_attack_7: 1866594202145527359
+      Paladin_attack_8: -3587075105684321632
+      Paladin_attack_9: -313348991365046097
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

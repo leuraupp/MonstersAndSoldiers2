@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void OnAttackButtonPressed() {
+        GridController.Instance.ShowAttackAnimation();
         ValidationResult result = ValidateAttack();
 
         if (result.IsValid) {

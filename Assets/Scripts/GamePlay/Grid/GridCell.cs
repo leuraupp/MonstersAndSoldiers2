@@ -24,11 +24,17 @@ public class GridCell : MonoBehaviour {
     public float BaseSize => baseSize;
 
     public CellType CurrentType { get; private set; }
+    public AnimationSwitcher AnimationSwitcher {
+        get { return animationSwitcher; }
+        set { animationSwitcher = value; }
+    }
+    public FaceDirection CurrentFaceDirection { get; private set; }
 
     private Color originalColor;
     private bool isMouseOver;
     private bool isSelected = false;
     private Vector2Int gridPosition;
+    private AnimationSwitcher animationSwitcher;
 
     private Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
                                 new Vector2Int(1,1), new Vector2Int(-1,-1), new Vector2Int(1,-1), new Vector2Int(-1,1) };
@@ -36,6 +42,7 @@ public class GridCell : MonoBehaviour {
 
     void Start() {
         originalColor = BGColor.color; // Guarda a cor original
+        CurrentFaceDirection = FaceDirection.Down;
     }
 
     private void Update() {
@@ -87,6 +94,7 @@ public class GridCell : MonoBehaviour {
         foreach (GameObject sprite in sprites) {
             if (sprite.name == CurrentType.ToString()) {
                 sprite.SetActive(true);
+                animationSwitcher = sprite.GetComponent<AnimationSwitcher>();
             } else {
                 sprite.SetActive(false);
             }
@@ -113,8 +121,7 @@ public class GridCell : MonoBehaviour {
         if (isSelected) {
             BGColor.color = leftClickColor;
             SetType(CellType.Soldier);
-            UpdateSoldierFacingDirection();
-            UpdateMonsterFacingDirections();
+            SetFaceDirection();
         } else {
             BGColor.color = highlightColor;
             SetType(CellType.Empty);
@@ -138,6 +145,11 @@ public class GridCell : MonoBehaviour {
         BGColor.DOColor(new Color(152f / 255f, 54f / 255f, 54f / 255f), 0.3f).SetLoops(2, LoopType.Yoyo);
     }
 
+    public void SetFaceDirection() {
+        UpdateSoldierFacingDirection();
+        UpdateMonsterFacingDirections();
+    }
+
     private void ResetColor() {
         BGColor.color = originalColor;
     }
@@ -147,15 +159,24 @@ public class GridCell : MonoBehaviour {
 
         Debug.Log("Difference: " + difference);
 
-        // Se estiver na mesma coluna (movimento vertical puro)
+        FaceDirection faceDirection;
+
         if (difference.y == 0) {
-            return difference.x > 0 ? FaceDirection.Up : FaceDirection.Down;
+            if (difference.x > 0) {
+                faceDirection = FaceDirection.Up;
+            } else {
+                faceDirection = FaceDirection.Down;
+            }
         }
-        // Para quaisquer outros casos (incluindo diagonais)
         else {
-            // Prioriza esquerda/direita baseado no movimento horizontal
-            return difference.y > 0 ? FaceDirection.Right : FaceDirection.Left;
+            if (difference.y > 0) {
+                faceDirection = FaceDirection.Right;
+            } else {
+                faceDirection = FaceDirection.Left;
+            }
         }
+
+        return faceDirection;
     }
 
     private List<GridCell> GetAdjacentMonsters(Vector2Int soldierPosition) {
@@ -179,7 +200,9 @@ public class GridCell : MonoBehaviour {
         if (adjacentMonsters.Count > 0) {
             // Escolhe o primeiro monstro na lista como referência
             Vector2Int targetPosition = adjacentMonsters[0].gridPosition;
-            FaceDirectionAnimation(DetermineFaceDirection(gridPosition, targetPosition));
+            FaceDirection faceDirection =  DetermineFaceDirection(gridPosition, targetPosition);
+            CurrentFaceDirection = faceDirection;
+            FaceDirectionAnimation(faceDirection);
         }
     }
 
@@ -188,12 +211,13 @@ public class GridCell : MonoBehaviour {
 
         foreach (GridCell monsterCell in nearbyMonsters) {
             //monsterCell.SetFaceDirection(DetermineFaceDirection(soldierCell.GridPosition));
-            FaceDirection direction = DetermineFaceDirection(monsterCell.gridPosition, gridPosition);
-            monsterCell.FaceDirectionAnimation(direction);
+            FaceDirection faceDirection = DetermineFaceDirection(monsterCell.gridPosition, gridPosition);
+            monsterCell.FaceDirectionAnimation(faceDirection);
+            monsterCell.CurrentFaceDirection = faceDirection;
         }
     }
 
-    private void FaceDirectionAnimation(FaceDirection direction) {
+    private void FaceDirectionAnimation(FaceDirection faceDirection) {
         Animator animator = transform.Find(CurrentType.ToString()).GetComponent<Animator>();
 
         animator.ResetTrigger("Up");
@@ -201,6 +225,8 @@ public class GridCell : MonoBehaviour {
         animator.ResetTrigger("Left");
         animator.ResetTrigger("Right");
 
-        animator.SetTrigger(direction.ToString());
+        Debug.Log("Face direction: " + faceDirection);
+
+        animator.SetTrigger(faceDirection.ToString());
     }
 }

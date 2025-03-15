@@ -130,7 +130,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -168,7 +168,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -935,7 +935,39 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Goblin_attack_0: -3849867153199174741
+      Goblin_attack_1: -816127612875301489
+      Goblin_attack_10: -7181544582058626525
+      Goblin_attack_11: 1309257566179716541
+      Goblin_attack_12: -8537593180493727499
+      Goblin_attack_13: -6758021243858926588
+      Goblin_attack_14: -2034198176983971582
+      Goblin_attack_15: 5085732738537238734
+      Goblin_attack_16: -6431479804480291963
+      Goblin_attack_17: -6679229488375337337
+      Goblin_attack_18: 767270581162150735
+      Goblin_attack_19: -5044684112917872578
+      Goblin_attack_2: -1369356245943661010
+      Goblin_attack_20: -6831720650497370895
+      Goblin_attack_21: 8535049970326917688
+      Goblin_attack_22: -1514727049366418822
+      Goblin_attack_23: 7071809208733413157
+      Goblin_attack_24: 3514195090185593459
+      Goblin_attack_25: 8560020954112415513
+      Goblin_attack_26: -6898938975355780265
+      Goblin_attack_27: 8399546481627319774
+      Goblin_attack_28: 424545309409394973
+      Goblin_attack_29: -2165033840132136996
+      Goblin_attack_3: -5901475046906101016
+      Goblin_attack_30: -2284300269639277710
+      Goblin_attack_31: -737463108687134111
+      Goblin_attack_4: 1014830861194029105
+      Goblin_attack_5: -7264795838584173817
+      Goblin_attack_6: -124900532917180259
+      Goblin_attack_7: -7008034516280312918
+      Goblin_attack_8: -8103736329256013850
+      Goblin_attack_9: -6366347435994487389
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

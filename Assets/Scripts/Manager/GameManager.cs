@@ -1,9 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
     static public GameManager Instance;
+
+    [Header("Feedback Settings")]
+    [SerializeField] private float successDelay = 1f;
+
+    private bool isAnimating = false;
+    private int pendingAnimations = 0;
 
     private void Awake() {
         if (Instance == null) {
@@ -14,14 +21,41 @@ public class GameManager : MonoBehaviour
     }
 
     public void OnAttackButtonPressed() {
-        GridController.Instance.ShowAttackAnimation();
-        ValidationResult result = ValidateAttack();
+        if (isAnimating) return;
 
-        if (result.IsValid) {
-            WinGame();
-        } else {
+        ValidationResult result = ValidateAttack();
+        isAnimating = true;
+        pendingAnimations = 0;
+
+        // Conta quantas células precisam animar
+        var cells = GridController.Instance.CurrentGrid.GetNonEmptyCells();
+        pendingAnimations = cells.Count;
+
+        // Registra o evento de fim de animação para cada célula
+        foreach (var cell in cells) {
+            cell.AnimationSwitcher.OnAttackAnimationComplete += () => OnCellAnimationComplete(result.IsValid);
+            cell.AnimationSwitcher.AnimationPlay("Attack", cell.CurrentType.ToString(), cell.CurrentFaceDirection.ToString(), result.IsValid);
+        }
+
+        if (!result.IsValid) {
             UIManager.Instance.ShowValidationResults(result.invalidSoldiers, result.unsatisfiedMonsters, result.soldierLimitExceeded);
         }
+    }
+
+    private void OnCellAnimationComplete(bool wasSuccessful) {
+        pendingAnimations--;
+        
+        if (pendingAnimations <= 0) {
+            isAnimating = false;
+            if (wasSuccessful) {
+                StartCoroutine(DelayedWin());
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator DelayedWin() {
+        yield return new WaitForSeconds(successDelay);
+        WinGame();
     }
 
     private ValidationResult ValidateAttack() {
@@ -59,7 +93,7 @@ public class GameManager : MonoBehaviour
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 if (x == 0 && y == 0)
-                    continue; // Ignora o pr�prio centro
+                    continue; // Ignora o próprio centro
                 Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
                 if (GridController.Instance.SoldierPositions.Contains(checkPos))
                     count++;

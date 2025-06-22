@@ -9,6 +9,7 @@ public class GridController : MonoBehaviour {
     [Header("References")]
     [SerializeField] private GridView GridViewPrefab;
     [SerializeField] private Transform gridParent;
+    [SerializeField] private Transform boardBackground;
 
     [Header("Settings")]
     [SerializeField] private float margin = 0.5f;
@@ -52,7 +53,15 @@ public class GridController : MonoBehaviour {
             Destroy(currentGrid.gameObject);
         }
         currentGrid = Instantiate(GridViewPrefab, gridParent);
-        currentGrid.InitializeGrid(levelData.rows, levelData.columns, levelData.monsterPlacements, currentGrid.GetComponent<BoxCollider2D>().bounds, margin, spacing);
+        currentGrid.InitializeGrid(
+            levelData.rows,
+            levelData.columns,
+            levelData.monsterPlacements,
+            currentGrid.GetComponent<BoxCollider2D>().bounds,
+            margin,
+            spacing,
+            boardBackground.position
+        );
         finalPosition = currentGrid.transform.position;
     }
 
@@ -60,17 +69,34 @@ public class GridController : MonoBehaviour {
         if (nextGrid != null) {
             Destroy(nextGrid.gameObject);
         }
-        
+
         nextGrid = Instantiate(GridViewPrefab, gridParent);
         nextGrid.transform.position = new Vector3(transitionDistance, 0, 0);
-        currentGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), 0.5f);
+
+        GridView oldGrid = currentGrid;
+
+        if (oldGrid != null) {
+            oldGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), 0.5f);
+        }
+
         nextGrid.transform.DOMove(finalPosition, 0.5f).OnComplete(() => {
-            soldierPositions = new List<Vector2Int>();
-            Destroy(currentGrid.gameObject);
-            nextGrid.InitializeGrid(nextLevel.rows, nextLevel.columns, nextLevel.monsterPlacements, nextGrid.GetComponent<BoxCollider2D>().bounds, margin, spacing);
+            if (oldGrid != null) Destroy(oldGrid.gameObject);
+
+            var box = nextGrid.GetComponent<BoxCollider2D>();
+            nextGrid.InitializeGrid(
+                nextLevel.rows,
+                nextLevel.columns,
+                nextLevel.monsterPlacements,
+                box.bounds,
+                margin,
+                spacing,
+                boardBackground.position
+            );
+
             currentGrid = nextGrid;
             nextGrid = null;
             currentLevel = nextLevel;
+            soldierPositions = new List<Vector2Int>();
         });
     }
 

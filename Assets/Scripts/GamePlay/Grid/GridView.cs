@@ -19,10 +19,10 @@ public class GridView : MonoBehaviour {
     private float cellSize;
     private float spacing;
 
-    public void InitializeGrid(int rows, int cols, List<MonsterPlacement> monsters, Bounds boardBounds, float margin, float spacing) {
+    public void InitializeGrid(int rows, int cols, List<MonsterPlacement> monsters, Bounds boardBounds, float margin, float spacing, Vector2 boardOrigin) {
+        Debug.Log($"[InitializeGrid] Inicializando grid com {rows} linhas, {cols} colunas, bounds: {boardBounds}, margin: {margin}, spacing: {spacing}, boardOrigin: {boardOrigin}");
         this.spacing = spacing;
 
-        // Calcula tamanho das c�lulas
         float availableWidth = boardBounds.size.x - (2 * margin);
         float availableHeight = boardBounds.size.y - (2 * margin);
 
@@ -30,13 +30,14 @@ public class GridView : MonoBehaviour {
             (availableWidth - (cols - 1) * spacing) / cols,
             (availableHeight - (rows - 1) * spacing) / rows
         );
+        Debug.Log($"[InitializeGrid] cellSize calculado: {cellSize}");
 
-        // Cria grid
         cells = new GridCell[rows, cols];
-        Vector2 startPos = new Vector2(
-            boardBounds.min.x + margin + cellSize / 2,
-            boardBounds.min.y + margin + cellSize / 2
+        Vector2 startPos = boardOrigin + new Vector2(
+            -((cols - 1) * (cellSize + spacing)) / 2 + 0.5f,
+            -((rows - 1) * (cellSize + spacing)) / 2 - 0.5f
         );
+        Debug.Log($"[InitializeGrid] startPos: {startPos}");
 
         float delayOffset = 0.01f;
         for (int row = 0; row < rows; row++) {
@@ -46,30 +47,27 @@ public class GridView : MonoBehaviour {
                     startPos.y + row * (cellSize + spacing),
                     0
                 );
-
+                Debug.Log($"[InitializeGrid] Instanciando célula em {position} (row {row}, col {col})");
                 GridCell cell = Instantiate(cellPrefab, gridParent);
                 cell.transform.position = position;
-
-                // Novo: Ajuste de escala baseado no tamanho calculado
                 float scaleFactor = cellSize / cell.BaseSize;
                 cell.transform.localScale = new Vector3(0, 0, 1);
                 cell.transform.DOScale(scaleFactor, 0.2f).SetDelay(delayOffset);
-
                 cell.Initialize(emptyColor);
                 cell.SetGridPosition(new Vector2Int(row, col));
                 cell.SetType(CellType.Empty);
                 foreach (MonsterPlacement monster in monsters) {
                     if (monster.gridPosition == new Vector2Int(row, col)) {
-                        Debug.Log("Setting monster");
+                        Debug.Log($"[InitializeGrid] Colocando monstro {monster.monsterType} na célula ({row}, {col})");
                         cell.SetColor(MonsterTypeToColor(monster.monsterType));
                         cell.SetType(MonsterTypeToCellType(monster.monsterType));
                     }
                 }
-
                 cells[row, col] = cell;
                 delayOffset += 0.01f;
             }
         }
+        Debug.Log("[InitializeGrid] Grid criada com sucesso!");
     }
 
     private CellType MonsterTypeToCellType(MonsterType monsterType) {
@@ -102,7 +100,7 @@ public class GridView : MonoBehaviour {
         return cells[gridPosition.x, gridPosition.y];
     }
 
-    private List<GridCell> GetNonEmptyCells() {
+    public List<GridCell> GetNonEmptyCells() {
         List<GridCell> nonEmptyCells = new List<GridCell>();
         foreach (GridCell cell in cells) {
             if (cell.CurrentType != CellType.Empty) {

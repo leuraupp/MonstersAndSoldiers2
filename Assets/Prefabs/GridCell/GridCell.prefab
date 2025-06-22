@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 1773798895549946709}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.126, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0.15, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
@@ -128,7 +128,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8513832390097762498
 Transform:
   m_ObjectHideFlags: 0
@@ -139,7 +139,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.115, z: 0}
-  m_LocalScale: {x: 1.5745, y: 1.5745, z: 1.5745}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
@@ -235,6 +235,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkController: {fileID: 9100000, guid: 1bbb5d213a32a004b8090afd9eec60a0, type: 2}
   attackController: {fileID: 9100000, guid: a8d8239c67cbbf443b75ecebe0119b9c, type: 2}
+  attackAnimationDuration: 1.2
+  attackSuccessScale: 1.2
+  attackFailScale: 0.8
 --- !u!1 &2823262226412917788
 GameObject:
   m_ObjectHideFlags: 0
@@ -263,7 +266,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.06, z: 0}
-  m_LocalScale: {x: 1.4185922, y: 1.4185922, z: 1.4185922}
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
@@ -531,7 +534,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3910833579550414074
 Transform:
   m_ObjectHideFlags: 0
@@ -541,8 +544,8 @@ Transform:
   m_GameObject: {fileID: 6028817256958656443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.09, z: 0}
-  m_LocalScale: {x: 3.1588376, y: 3.1588376, z: 3.1588376}
+  m_LocalPosition: {x: 0, y: 0.091, z: 0}
+  m_LocalScale: {x: 1.769, y: 1.769, z: 1.769}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
@@ -638,3 +641,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkController: {fileID: 9100000, guid: 4dbd479268511f648adb89b026ed0890, type: 2}
   attackController: {fileID: 9100000, guid: 991ba7d3b73eb6149b19e1f11dce9b93, type: 2}
+  attackAnimationDuration: 1.2
+  attackSuccessScale: 1.2
+  attackFailScale: 0.8

@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using System;
+using DG.Tweening;
 
 public enum State {
     Walk,
@@ -8,14 +10,22 @@ public enum State {
 
 public class AnimationSwitcher : MonoBehaviour
 {
+    public event Action OnAttackAnimationComplete;
+
     [Header("Animation Controllers")]
     [SerializeField] private RuntimeAnimatorController walkController;
     [SerializeField] private RuntimeAnimatorController attackController;
+
+    [Header("Animation Settings")]
+    [SerializeField] private float attackAnimationDuration = 1.2f;
+    [SerializeField] private float attackSuccessScale = 1.2f;
+    [SerializeField] private float attackFailScale = 0.8f;
 
     private Animator animator;
     private State currentState;
     private string currentCellType;
     private string currentDirection;
+    private bool isAttackSuccessful;
 
     void Awake() {
         animator = GetComponent<Animator>();
@@ -40,10 +50,12 @@ public class AnimationSwitcher : MonoBehaviour
         SetState(State.Attack);
     }
 
-    public void AnimationPlay(string animationType, string cellType, string direction) {
+    public void AnimationPlay(string animationType, string cellType, string direction, bool success = true) {
         Debug.Log(cellType + "_" + animationType + "_" + direction);
         currentCellType = cellType;
         currentDirection = direction;
+        isAttackSuccessful = success;
+
         if (animationType == State.Attack.ToString()) {
             SetAttackController();
             StartCoroutine(OnAttackFinished());
@@ -55,7 +67,24 @@ public class AnimationSwitcher : MonoBehaviour
     }
 
     IEnumerator OnAttackFinished() {
-        yield return new WaitForSeconds(0.8f);
+        // Efeito visual baseado no sucesso/falha
+        Vector3 originalScale = transform.localScale;
+        Vector3 targetScale = isAttackSuccessful ? 
+            originalScale * attackSuccessScale : 
+            originalScale * attackFailScale;
+
+        // Anima a escala
+        transform.DOScale(targetScale, attackAnimationDuration * 0.3f)
+            .SetLoops(2, LoopType.Yoyo)
+            .SetEase(Ease.InOutQuad);
+
+        yield return new WaitForSeconds(attackAnimationDuration);
+        
+        // Notifica que a animação terminou
+        OnAttackAnimationComplete?.Invoke();
+        
+        // Volta para a animação de walk
         AnimationPlay("Walk", currentCellType, currentDirection);
+        transform.localScale = originalScale;
     }
 }

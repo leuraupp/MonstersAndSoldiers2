@@ -52,7 +52,7 @@ public class GridCell : MonoBehaviour {
         bool wasMouseOver = isMouseOver;
         isMouseOver = Physics.Raycast(ray, out hit) && hit.collider.gameObject == gameObject;
 
-        // Detecta mudança de estado
+        // Detecta mudanï¿½a de estado
         if (!wasMouseOver && isMouseOver)
             OnMouseEnter();
         if (wasMouseOver && !isMouseOver)
@@ -198,7 +198,7 @@ public class GridCell : MonoBehaviour {
         List<GridCell> adjacentMonsters = GetAdjacentMonsters(gridPosition);
 
         if (adjacentMonsters.Count > 0) {
-            // Escolhe o primeiro monstro na lista como referência
+            // Escolhe o primeiro monstro na lista como referï¿½ncia
             Vector2Int targetPosition = adjacentMonsters[0].gridPosition;
             FaceDirection faceDirection =  DetermineFaceDirection(gridPosition, targetPosition);
             CurrentFaceDirection = faceDirection;

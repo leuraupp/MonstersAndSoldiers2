@@ -1,232 +1,112 @@
-using DG.Tweening;
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
+using MonstersAndSoldiers.Core;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public enum FaceDirection {
-    Up,
-    Down,
-    Left,
-    Right
-}
-
+/// <summary>
+/// Visual de uma casa. Não guarda regra nenhuma: só mostra o que o <see cref="GridView"/> mandar.
+/// </summary>
 public class GridCell : MonoBehaviour {
+    private const string SoldierSpriteName = "Soldier";
+
     [Header("Visuals")]
+    [Tooltip("Filhos com o nome do ocupante: Slime, Goblin, Orc, Soldier")]
     [SerializeField] private List<GameObject> sprites;
     [SerializeField] private SpriteRenderer BGColor;
     [SerializeField] private Color highlightColor = Color.yellow;
-    [SerializeField] private Color leftClickColor = Color.green;
-    [SerializeField] private Color rightClickColor = Color.red;
+    [SerializeField] private Color soldierColor = new Color(0.55f, 0.72f, 0.9f);
+    [SerializeField] private Color grassColor = new Color(0.55f, 0.78f, 0.45f);
+    [SerializeField] private Color errorColor = new Color(152f / 255f, 54f / 255f, 54f / 255f);
+    [SerializeField, Range(0f, 1f)] private float highlightStrength = 0.45f;
 
     [Header("Size Settings")]
     [SerializeField] private float baseSize = 1f; // Tamanho original do sprite
 
     public float BaseSize => baseSize;
+    public GridPos Position { get; private set; }
 
-    public CellType CurrentType { get; private set; }
-    public AnimationSwitcher AnimationSwitcher {
-        get { return animationSwitcher; }
-        set { animationSwitcher = value; }
-    }
-    public FaceDirection CurrentFaceDirection { get; private set; }
+    private Color baseColor;
+    private bool isHighlighted;
+    private AnimationSwitcher occupant;
+    private Tween colorTween;
 
-    private Color originalColor;
-    private bool isMouseOver;
-    private bool isSelected = false;
-    private Vector2Int gridPosition;
-    private AnimationSwitcher animationSwitcher;
-
-    private Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
-                                new Vector2Int(1,1), new Vector2Int(-1,-1), new Vector2Int(1,-1), new Vector2Int(-1,1) };
-
-
-    void Start() {
-        originalColor = BGColor.color; // Guarda a cor original
-        CurrentFaceDirection = FaceDirection.Down;
+    public void Initialize(GridPos position, Color emptyColor) {
+        Position = position;
+        baseColor = emptyColor;
+        name = $"Cell {position}";
+        ShowOccupant(null);
+        RefreshColor();
     }
 
-    private void Update() {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        bool wasMouseOver = isMouseOver;
-        isMouseOver = Physics.Raycast(ray, out hit) && hit.collider.gameObject == gameObject;
-
-        // Detecta mudan�a de estado
-        if (!wasMouseOver && isMouseOver)
-            OnMouseEnter();
-        if (wasMouseOver && !isMouseOver)
-            OnMouseExit();
-
-        // Detecta cliques
-        if (isMouseOver) {
-            if (Input.GetMouseButtonDown(0))
-                OnLeftClick();
-            if (Input.GetMouseButtonDown(1))
-                OnRightClick();
-        }
+    /// <summary>Configura a casa como monstro (fixo durante todo o nível).</summary>
+    public void SetMonster(MonsterType type, Color color) {
+        baseColor = color;
+        name = $"{type} {Position}";
+        ShowOccupant(type.ToString());
+        RefreshColor();
     }
 
-    public void Initialize(Color color) {
-        SetColor(color);
+    /// <summary>Mostra o estado de uma casa sem monstro.</summary>
+    public void SetState(CellState state, Color emptyColor) {
+        baseColor = state switch {
+            CellState.Soldier => soldierColor,
+            CellState.Grass => grassColor,
+            _ => emptyColor
+        };
+        ShowOccupant(state == CellState.Soldier ? SoldierSpriteName : null);
+        RefreshColor();
     }
 
-    public void SetColor(Color newColor) {
-        BGColor.color = newColor;
+    public void SetHighlight(bool highlighted) {
+        if (isHighlighted == highlighted) return;
+        isHighlighted = highlighted;
+        RefreshColor();
     }
 
-    public void SetType(CellType newType) {
-        CurrentType = newType;
-        SetCellSprite();
-        if (newType == CellType.Soldier) {
-            GridController.Instance.TryPlaceSoldier(gridPosition);
-        } else {
-            GridController.Instance.TryRemoveSoldier(gridPosition);
-        }
-        name = newType.ToString() + " " + gridPosition;
+    public void Face(FaceDirection direction) {
+        if (occupant != null) occupant.Face(direction);
     }
 
-    public void SetGridPosition(Vector2Int position) {
-        gridPosition = position;
-    }
-
-    private void SetCellSprite() {
-        foreach (GameObject sprite in sprites) {
-            if (sprite.name == CurrentType.ToString()) {
-                sprite.SetActive(true);
-                animationSwitcher = sprite.GetComponent<AnimationSwitcher>();
-            } else {
-                sprite.SetActive(false);
-            }
-        }
-    }
-
-    private void OnMouseEnter() {
-        if (!isSelected) {
-            BGColor.color = highlightColor;
-        }
-    }
-
-    private void OnMouseExit() {
-        if (!isSelected) {
-            BGColor.color = originalColor;
-        }
-    }
-
-    private void OnLeftClick() {
-        if (CurrentType != CellType.Empty && CurrentType != CellType.Soldier) {
-            return;
-        }
-        isSelected = !isSelected;
-        if (isSelected) {
-            BGColor.color = leftClickColor;
-            SetType(CellType.Soldier);
-            SetFaceDirection();
-        } else {
-            BGColor.color = highlightColor;
-            SetType(CellType.Empty);
-        }
-
-    }
-
-    private void OnRightClick() {
-        if (CurrentType != CellType.Empty && CurrentType != CellType.Soldier) {
-            return;
-        }
-        isSelected = !isSelected;
-        if (isSelected) {
-            BGColor.color = rightClickColor;
-        } else {
-            BGColor.color = highlightColor;
-        }
+    /// <summary>Toca o ataque; retorna false (sem chamar o callback) se a casa não tem personagem.</summary>
+    public bool PlayAttack(bool success, Action onComplete) {
+        if (occupant == null) return false;
+        occupant.PlayAttack(success, onComplete);
+        return true;
     }
 
     public void FlashRed() {
-        BGColor.DOColor(new Color(152f / 255f, 54f / 255f, 54f / 255f), 0.3f).SetLoops(2, LoopType.Yoyo);
+        colorTween?.Kill();
+        colorTween = BGColor.DOColor(errorColor, 0.3f)
+            .SetLoops(2, LoopType.Yoyo)
+            .OnKill(ApplyColor);
     }
 
-    public void SetFaceDirection() {
-        UpdateSoldierFacingDirection();
-        UpdateMonsterFacingDirections();
+    private void RefreshColor() {
+        colorTween?.Kill();
+        colorTween = null;
+        ApplyColor();
     }
 
-    private void ResetColor() {
-        BGColor.color = originalColor;
+    private void ApplyColor() {
+        if (BGColor == null) return;
+        BGColor.color = isHighlighted ? Color.Lerp(baseColor, highlightColor, highlightStrength) : baseColor;
     }
 
-    private FaceDirection DetermineFaceDirection(Vector2Int currentPosition, Vector2Int targetCell) {
-        Vector2Int difference = targetCell - currentPosition;
+    private void ShowOccupant(string spriteName) {
+        occupant = null;
+        foreach (GameObject sprite in sprites) {
+            bool active = sprite.name == spriteName;
+            sprite.SetActive(active);
+            if (!active) continue;
 
-        Debug.Log("Difference: " + difference);
-
-        FaceDirection faceDirection;
-
-        if (difference.y == 0) {
-            if (difference.x > 0) {
-                faceDirection = FaceDirection.Up;
-            } else {
-                faceDirection = FaceDirection.Down;
-            }
-        }
-        else {
-            if (difference.y > 0) {
-                faceDirection = FaceDirection.Right;
-            } else {
-                faceDirection = FaceDirection.Left;
-            }
-        }
-
-        return faceDirection;
-    }
-
-    private List<GridCell> GetAdjacentMonsters(Vector2Int soldierPosition) {
-        List<GridCell> adjacentMonsters = new List<GridCell>();
-
-        foreach (Vector2Int dir in directions) {
-            Vector2Int checkPos = soldierPosition + dir;
-            if (GridController.Instance.IsValidPosition(checkPos)) {
-                GridCell cell = GridController.Instance.CurrentGrid.GetCellAtPosition(checkPos);
-                if (cell != null && cell.CurrentType == CellType.Slime || cell.CurrentType == CellType.Goblin || cell.CurrentType == CellType.Orc) {
-                    adjacentMonsters.Add(cell);
-                }
-            }
-        }
-        return adjacentMonsters;
-    }
-
-    private void UpdateSoldierFacingDirection() {
-        List<GridCell> adjacentMonsters = GetAdjacentMonsters(gridPosition);
-
-        if (adjacentMonsters.Count > 0) {
-            // Escolhe o primeiro monstro na lista como refer�ncia
-            Vector2Int targetPosition = adjacentMonsters[0].gridPosition;
-            FaceDirection faceDirection =  DetermineFaceDirection(gridPosition, targetPosition);
-            CurrentFaceDirection = faceDirection;
-            FaceDirectionAnimation(faceDirection);
+            occupant = sprite.GetComponent<AnimationSwitcher>();
+            if (occupant == null) occupant = sprite.AddComponent<AnimationSwitcher>();
+            occupant.Prefix = spriteName;
         }
     }
 
-    private void UpdateMonsterFacingDirections() {
-        List<GridCell> nearbyMonsters = GetAdjacentMonsters(gridPosition);
-
-        foreach (GridCell monsterCell in nearbyMonsters) {
-            //monsterCell.SetFaceDirection(DetermineFaceDirection(soldierCell.GridPosition));
-            FaceDirection faceDirection = DetermineFaceDirection(monsterCell.gridPosition, gridPosition);
-            monsterCell.FaceDirectionAnimation(faceDirection);
-            monsterCell.CurrentFaceDirection = faceDirection;
-        }
-    }
-
-    private void FaceDirectionAnimation(FaceDirection faceDirection) {
-        Animator animator = transform.Find(CurrentType.ToString()).GetComponent<Animator>();
-
-        animator.ResetTrigger("Up");
-        animator.ResetTrigger("Down");
-        animator.ResetTrigger("Left");
-        animator.ResetTrigger("Right");
-
-        Debug.Log("Face direction: " + faceDirection);
-
-        animator.SetTrigger(faceDirection.ToString());
+    private void OnDestroy() {
+        colorTween?.Kill();
     }
 }

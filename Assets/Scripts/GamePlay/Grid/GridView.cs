@@ -1,8 +1,13 @@
 // Scripts/Gameplay/GridView.cs
-using UnityEngine;
-using DG.Tweening;
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
+using MonstersAndSoldiers.Core;
+using UnityEngine;
 
+/// <summary>
+/// Desenha um <see cref="BoardModel"/> e reage às mudanças dele. Também converte posição do mundo em casa.
+/// </summary>
 public class GridView : MonoBehaviour {
     [Header("References")]
     [SerializeField] private Transform gridParent;
@@ -13,15 +18,20 @@ public class GridView : MonoBehaviour {
     [SerializeField] private Color slimeColor = Color.green;
     [SerializeField] private Color goblinColor = Color.yellow;
     [SerializeField] private Color orcColor = Color.red;
-    [SerializeField] private Color soldierColor = Color.blue;
+
+    public BoardModel Board { get; private set; }
 
     private GridCell[,] cells;
     private float cellSize;
-    private float spacing;
+    private float step;
+    private Vector2 startPos;
+    private GridPos? highlighted;
 
-    public void InitializeGrid(int rows, int cols, List<MonsterPlacement> monsters, Bounds boardBounds, float margin, float spacing, Vector2 boardOrigin) {
-        Debug.Log($"[InitializeGrid] Inicializando grid com {rows} linhas, {cols} colunas, bounds: {boardBounds}, margin: {margin}, spacing: {spacing}, boardOrigin: {boardOrigin}");
-        this.spacing = spacing;
+    public void InitializeGrid(BoardModel board, Bounds boardBounds, float margin, float spacing, Vector2 boardOrigin) {
+        Unbind();
+        Board = board;
+        int rows = board.Rows;
+        int cols = board.Cols;
 
         float availableWidth = boardBounds.size.x - (2 * margin);
         float availableHeight = boardBounds.size.y - (2 * margin);
@@ -30,53 +40,136 @@ public class GridView : MonoBehaviour {
             (availableWidth - (cols - 1) * spacing) / cols,
             (availableHeight - (rows - 1) * spacing) / rows
         );
-        Debug.Log($"[InitializeGrid] cellSize calculado: {cellSize}");
+        step = cellSize + spacing;
+
+        startPos = boardOrigin + new Vector2(
+            -((cols - 1) * step) / 2 + 0.5f,
+            -((rows - 1) * step) / 2 - 0.5f
+        );
 
         cells = new GridCell[rows, cols];
-        Vector2 startPos = boardOrigin + new Vector2(
-            -((cols - 1) * (cellSize + spacing)) / 2 + 0.5f,
-            -((rows - 1) * (cellSize + spacing)) / 2 - 0.5f
-        );
-        Debug.Log($"[InitializeGrid] startPos: {startPos}");
-
         float delayOffset = 0.01f;
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                Vector3 position = new Vector3(
-                    startPos.x + col * (cellSize + spacing),
-                    startPos.y + row * (cellSize + spacing),
-                    0
-                );
-                Debug.Log($"[InitializeGrid] Instanciando célula em {position} (row {row}, col {col})");
+                var pos = new GridPos(row, col);
                 GridCell cell = Instantiate(cellPrefab, gridParent);
-                cell.transform.position = position;
+                cell.transform.position = CellToWorld(pos);
                 float scaleFactor = cellSize / cell.BaseSize;
                 cell.transform.localScale = new Vector3(0, 0, 1);
-                cell.transform.DOScale(scaleFactor, 0.2f).SetDelay(delayOffset);
-                cell.Initialize(emptyColor);
-                cell.SetGridPosition(new Vector2Int(row, col));
-                cell.SetType(CellType.Empty);
-                foreach (MonsterPlacement monster in monsters) {
-                    if (monster.gridPosition == new Vector2Int(row, col)) {
-                        Debug.Log($"[InitializeGrid] Colocando monstro {monster.monsterType} na célula ({row}, {col})");
-                        cell.SetColor(MonsterTypeToColor(monster.monsterType));
-                        cell.SetType(MonsterTypeToCellType(monster.monsterType));
-                    }
+                cell.transform.DOScale(scaleFactor, 0.2f).SetDelay(delayOffset).SetLink(cell.gameObject);
+
+                cell.Initialize(pos, emptyColor);
+                if (board.TryGetMonster(pos, out MonsterType monster)) {
+                    cell.SetMonster(monster, MonsterTypeToColor(monster));
+                } else {
+                    cell.SetState(board.GetState(pos), emptyColor);
                 }
+
                 cells[row, col] = cell;
                 delayOffset += 0.01f;
             }
         }
-        Debug.Log("[InitializeGrid] Grid criada com sucesso!");
+
+        board.CellChanged += OnCellChanged;
     }
 
-    private CellType MonsterTypeToCellType(MonsterType monsterType) {
-        return monsterType switch {
-            MonsterType.Slime => CellType.Slime,
-            MonsterType.Goblin => CellType.Goblin,
-            MonsterType.Orc => CellType.Orc,
-            _ => CellType.Empty
-        };
+    private void OnDestroy() {
+        Unbind();
+    }
+
+    private void Unbind() {
+        if (Board != null) Board.CellChanged -= OnCellChanged;
+    }
+
+    private void OnCellChanged(GridPos pos, CellState state) {
+        GridCell cell = cells[pos.Row, pos.Col];
+        cell.SetState(state, emptyColor);
+        if (state == CellState.Soldier) FaceNeighbors(pos);
+    }
+
+    // ---------- Posição ----------
+
+    public Vector3 CellToWorld(GridPos pos) {
+        return new Vector3(startPos.x + pos.Col * step, startPos.y + pos.Row * step, 0);
+    }
+
+    /// <summary>Casa sob um ponto do mundo. False se o ponto cai fora do tabuleiro ou no espaço entre casas.</summary>
+    public bool TryWorldToCell(Vector2 world, out GridPos pos) {
+        pos = default;
+        if (Board == null) return false;
+
+        float fc = (world.x - startPos.x) / step;
+        float fr = (world.y - startPos.y) / step;
+        int col = Mathf.RoundToInt(fc);
+        int row = Mathf.RoundToInt(fr);
+
+        float half = cellSize / 2f / step;
+        if (Mathf.Abs(fc - col) > half || Mathf.Abs(fr - row) > half) return false;
+
+        pos = new GridPos(row, col);
+        return Board.IsInside(pos);
+    }
+
+    // ---------- Feedback ----------
+
+    public void SetHighlight(GridPos? pos) {
+        if (highlighted == pos) return;
+        if (highlighted.HasValue) cells[highlighted.Value.Row, highlighted.Value.Col].SetHighlight(false);
+        highlighted = pos;
+        if (pos.HasValue) cells[pos.Value.Row, pos.Value.Col].SetHighlight(true);
+    }
+
+    public void SetInvalidCell(GridPos pos) {
+        cells[pos.Row, pos.Col].FlashRed();
+    }
+
+    public void ShowValidationErrors(ValidationResult result) {
+        var flashed = new HashSet<GridPos>();
+        void Flash(GridPos p) {
+            if (flashed.Add(p)) SetInvalidCell(p);
+        }
+
+        foreach (GridPos p in result.UnsatisfiedMonsters) Flash(p);
+        foreach (GridPos p in result.TouchingSoldiers) Flash(p);
+        foreach (GridPos p in result.UnpairedSoldiers) Flash(p);
+        // TODO Fase 2: destacar as pistas (WrongRows / WrongCols) quando elas forem exibidas.
+    }
+
+    // ---------- Animações ----------
+
+    /// <summary>Soldado recém-colocado olha para um monstro vizinho, e esses monstros olham para ele.</summary>
+    private void FaceNeighbors(GridPos soldier) {
+        bool facedSoldier = false;
+        foreach (GridPos n in Board.InsideNeighbors8(soldier)) {
+            if (!Board.IsMonster(n)) continue;
+            if (!facedSoldier) {
+                cells[soldier.Row, soldier.Col].Face(MonsterRules.DirectionTo(soldier, n));
+                facedSoldier = true;
+            }
+            cells[n.Row, n.Col].Face(MonsterRules.DirectionTo(n, soldier));
+        }
+    }
+
+    /// <summary>
+    /// Todos os personagens atacam. Soldados pareados olham para o seu monstro antes.
+    /// <paramref name="onComplete"/> é chamado uma vez, quando a última animação terminar.
+    /// </summary>
+    public void PlayAttack(ValidationResult result, Action onComplete) {
+        foreach (KeyValuePair<GridPos, GridPos> pair in result.SoldierToMonster) {
+            cells[pair.Key.Row, pair.Key.Col].Face(MonsterRules.DirectionTo(pair.Key, pair.Value));
+            cells[pair.Value.Row, pair.Value.Col].Face(MonsterRules.DirectionTo(pair.Value, pair.Key));
+        }
+
+        int pending = 1; // segura o callback até todas as animações terem começado
+        void Done() {
+            if (--pending == 0) onComplete?.Invoke();
+        }
+
+        foreach (GridCell cell in cells) {
+            pending++;
+            if (!cell.PlayAttack(result.IsValid, Done)) pending--;
+        }
+        Done();
     }
 
     private Color MonsterTypeToColor(MonsterType monsterType) {
@@ -86,39 +179,5 @@ public class GridView : MonoBehaviour {
             MonsterType.Orc => orcColor,
             _ => emptyColor
         };
-    }
-
-    public void SetCellColor(Vector2Int gridPosition, Color color) {
-        cells[gridPosition.x, gridPosition.y].SetColor(color);
-    }
-
-    public void SetInvalidCell(Vector2Int gridPosition) {
-        cells[gridPosition.x, gridPosition.y].FlashRed();
-    }
-
-    public GridCell GetCellAtPosition(Vector2Int gridPosition) {
-        return cells[gridPosition.x, gridPosition.y];
-    }
-
-    public List<GridCell> GetNonEmptyCells() {
-        List<GridCell> nonEmptyCells = new List<GridCell>();
-        foreach (GridCell cell in cells) {
-            if (cell.CurrentType != CellType.Empty) {
-                nonEmptyCells.Add(cell);
-            }
-        }
-        return nonEmptyCells;
-    }
-
-    public void ShowAttackAnimation() {
-        List<GridCell> cells = GetNonEmptyCells();
-        Debug.Log("Showing attack animation");
-        Debug.Log(cells.Count);
-
-        foreach (GridCell cell in cells) {
-            Debug.Log("cell.CurrentType.ToString(): " + cell.CurrentType.ToString());
-            Debug.Log("cell.CurrentFaceDirection.ToString(): " + cell.CurrentFaceDirection.ToString());
-            cell.AnimationSwitcher.AnimationPlay("Attack", cell.CurrentType.ToString(), cell.CurrentFaceDirection.ToString());
-        }
     }
 }

@@ -1,5 +1,6 @@
 // Scripts/Data/LevelData.cs
 using System.Collections.Generic;
+using MonstersAndSoldiers.Core;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewLevel", menuName = "Battle Grid/Level Data")]
@@ -18,10 +19,29 @@ public class LevelData : ScriptableObject {
     [Header("Monsters")]
     public List<MonsterPlacement> monsterPlacements = new List<MonsterPlacement>();
 
+    [Header("Clues (vazio = nível sem pistas)")]
+    [Tooltip("Soldados por linha, da linha 0 (embaixo) para cima")]
+    public int[] rowClues = new int[0];
+
+    [Tooltip("Soldados por coluna, da coluna 0 (esquerda) para a direita")]
+    public int[] columnClues = new int[0];
+
     [Header("Visuals")]
     public Sprite backgroundSprite;
     public Color backgroundColor = Color.white;
 
-    [Header("Soldiers")]
-    public int maxSoldiers = 5;
+    public bool HasClues => rowClues != null && columnClues != null &&
+                            rowClues.Length == rows && columnClues.Length == columns;
+
+    /// <summary>Cria o modelo do tabuleiro a partir deste nível.</summary>
+    public BoardModel CreateBoard() {
+        var monsters = new Dictionary<GridPos, MonsterType>();
+        foreach (MonsterPlacement m in monsterPlacements) {
+            monsters[new GridPos(m.gridPosition.x, m.gridPosition.y)] = m.monsterType;
+        }
+
+        return HasClues
+            ? new BoardModel(rows, columns, monsters, rowClues, columnClues)
+            : new BoardModel(rows, columns, monsters);
+    }
 }

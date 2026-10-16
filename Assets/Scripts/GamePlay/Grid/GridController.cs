@@ -1,8 +1,12 @@
 // Scripts/Managers/GridController.cs
-using System.Collections.Generic;
-using UnityEngine;
+using System;
 using DG.Tweening;
+using MonstersAndSoldiers.Core;
+using UnityEngine;
 
+/// <summary>
+/// Cria o modelo de cada nível, instancia a <see cref="GridView"/> correspondente e cuida da transição entre grids.
+/// </summary>
 public class GridController : MonoBehaviour {
     public static GridController Instance;
 
@@ -15,31 +19,21 @@ public class GridController : MonoBehaviour {
     [SerializeField] private float margin = 0.5f;
     [SerializeField] private float spacing = 0.2f;
     [SerializeField] private float transitionDistance = 25f;
+    [SerializeField] private float transitionDuration = 0.5f;
 
     private GridView currentGrid;
     private GridView nextGrid;
-    private LevelData currentLevel;
-    private List<Vector2Int> soldierPositions = new List<Vector2Int>();
     private Vector3 finalPosition;
 
-    //get set currentLevel
-    public LevelData CurrentLevel {
-        get => currentLevel;
-    }
+    public LevelData CurrentLevel { get; private set; }
+    public GridView CurrentGrid => currentGrid;
+    public BoardModel Board => currentGrid != null ? currentGrid.Board : null;
+    public bool IsTransitioning => nextGrid != null;
 
-    public List<Vector2Int> SoldierPositions {
-        get => soldierPositions;
-    }
+    /// <summary>Disparado quando um novo tabuleiro fica ativo (início, reinício ou próximo nível).</summary>
+    public event Action<BoardModel> BoardChanged;
 
-    public int RemainingSoldiers {
-        get => currentLevel.maxSoldiers - soldierPositions.Count;
-    }
-
-    public GridView CurrentGrid {
-        get => currentGrid;
-    }
-
-    void Awake() {
+    private void Awake() {
         if (Instance == null) {
             Instance = this;
         } else {
@@ -47,95 +41,50 @@ public class GridController : MonoBehaviour {
         }
     }
 
+    private void OnDestroy() {
+        if (Instance == this) Instance = null;
+    }
+
     public void GenerateGrid(LevelData levelData) {
-        currentLevel = levelData;
+        CurrentLevel = levelData;
         if (currentGrid != null) {
             Destroy(currentGrid.gameObject);
         }
         currentGrid = Instantiate(GridViewPrefab, gridParent);
-        currentGrid.InitializeGrid(
-            levelData.rows,
-            levelData.columns,
-            levelData.monsterPlacements,
-            currentGrid.GetComponent<BoxCollider2D>().bounds,
-            margin,
-            spacing,
-            boardBackground.position
-        );
         finalPosition = currentGrid.transform.position;
+        Initialize(currentGrid, levelData);
+        BoardChanged?.Invoke(currentGrid.Board);
     }
 
     public void TransitionToNextGrid(LevelData nextLevel) {
-        if (nextGrid != null) {
-            Destroy(nextGrid.gameObject);
-        }
+        if (IsTransitioning) return;
 
         nextGrid = Instantiate(GridViewPrefab, gridParent);
         nextGrid.transform.position = new Vector3(transitionDistance, 0, 0);
 
         GridView oldGrid = currentGrid;
-
         if (oldGrid != null) {
-            oldGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), 0.5f);
+            oldGrid.transform.DOMove(new Vector3(-transitionDistance, 0, 0), transitionDuration).SetLink(oldGrid.gameObject);
         }
 
-        nextGrid.transform.DOMove(finalPosition, 0.5f).OnComplete(() => {
+        nextGrid.transform.DOMove(finalPosition, transitionDuration).SetLink(nextGrid.gameObject).OnComplete(() => {
             if (oldGrid != null) Destroy(oldGrid.gameObject);
 
-            var box = nextGrid.GetComponent<BoxCollider2D>();
-            nextGrid.InitializeGrid(
-                nextLevel.rows,
-                nextLevel.columns,
-                nextLevel.monsterPlacements,
-                box.bounds,
-                margin,
-                spacing,
-                boardBackground.position
-            );
-
+            Initialize(nextGrid, nextLevel);
             currentGrid = nextGrid;
             nextGrid = null;
-            currentLevel = nextLevel;
-            soldierPositions = new List<Vector2Int>();
+            CurrentLevel = nextLevel;
+            BoardChanged?.Invoke(currentGrid.Board);
         });
     }
 
-    public int GetRequiredSoldiers(MonsterType monsterType) {
-        return monsterType switch {
-            MonsterType.Slime => 1,
-            MonsterType.Goblin => 2,
-            MonsterType.Orc => 3,
-            _ => 0
-        };
-    }
-
-    public void TryPlaceSoldier(Vector2Int gridPosition) {
-        soldierPositions.Add(gridPosition);
-    }
-
-    public void TryRemoveSoldier(Vector2Int gridPosition) {
-        soldierPositions.Remove(gridPosition);
-    }
-
-    public void HighlightInvalidSoldiers(HashSet<Vector2Int> invalidSoldiers) {
-        foreach (var pos in invalidSoldiers) {
-            currentGrid.SetInvalidCell(pos);
-        }
-    }
-    public void HighlightUnsatisfiedMonsters(HashSet<Vector2Int> unsatisfiedMonsters) {
-        foreach (var pos in unsatisfiedMonsters) {
-            currentGrid.SetInvalidCell(pos);
-        }
-    }
-    public void ShowSoldierLimitExceededMessage() {
-        Debug.Log("Limite de soldados excedido!");
-    }
-
-    public bool IsValidPosition(Vector2Int position) {
-        return position.x >= 0 && position.x < currentLevel.rows && position.y >= 0 && position.y < currentLevel.columns;
-    }
-
-    public void ShowAttackAnimation() {
-        currentGrid.ShowAttackAnimation();
+    private void Initialize(GridView grid, LevelData level) {
+        grid.InitializeGrid(
+            level.CreateBoard(),
+            grid.GetComponent<BoxCollider2D>().bounds,
+            margin,
+            spacing,
+            boardBackground.position
+        );
     }
 }

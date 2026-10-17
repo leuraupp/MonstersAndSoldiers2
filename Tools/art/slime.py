@@ -116,8 +116,9 @@ def anims(facing):
     cx = 16
     A = {}
 
-    A["Idle"] = [slime(cx, GROUND, w, h, facing)
-                 for w, h in [(20, 13), (21, 12), (22, 11), (21, 12)]]
+    jiggle = [(19, 14), (20, 13), (21, 12), (22, 11), (23, 10), (22, 11), (21, 12), (20, 13)]
+    A["Idle"] = [slime(cx, GROUND, w, h, facing, eyes="closed" if i == 4 else "open")
+                 for i, (w, h) in enumerate(jiggle)]
 
     # lunge toward the facing direction, then splat on the target
     def at(off, lift, w, h, **kw):

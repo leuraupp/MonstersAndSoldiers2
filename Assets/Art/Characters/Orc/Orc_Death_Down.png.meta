@@ -259,6 +259,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Orc_Death_Down_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fa9c89befeca5e54686017d10f5523fd
+      internalID: 128269346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -279,6 +301,7 @@ TextureImporter:
       Orc_Death_Down_3: 4998476627786821336
       Orc_Death_Down_4: -5686134070779746425
       Orc_Death_Down_5: 678789828844476462
+      Orc_Death_Down_6: 128269346
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import slime
 import characters
 import ui
+import title
 import lineup  # noqa: F401  (builds the lineup preview on import)
 
 if __name__ == "__main__":
@@ -24,3 +25,4 @@ if __name__ == "__main__":
     for spec in characters.ALL.values():
         characters.build(spec)
     ui.main()
+    title.build()

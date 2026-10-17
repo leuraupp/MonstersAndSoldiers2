@@ -259,6 +259,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Paladin_Death_Up_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0022f4d503e066e4fb54bccac9a32eca
+      internalID: -1185625441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -279,6 +301,7 @@ TextureImporter:
       Paladin_Death_Up_3: -2750006105414790533
       Paladin_Death_Up_4: -2179175557085419000
       Paladin_Death_Up_5: -5836248179384659227
+      Paladin_Death_Up_6: -1185625441
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

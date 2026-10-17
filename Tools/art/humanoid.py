@@ -33,12 +33,13 @@ class Pose:
     off_arm: float = 175   # shield / free arm angle
     stride: int = 0        # -1, 0, 1 leg offset
     crouch: int = 0        # legs shortened by n px
-    face: str = "normal"   # normal | angry | pain | dead
+    face: str = "normal"   # normal | angry | pain | dead | blink
     flash: bool = False
     trail: tuple | None = None   # (from_angle, to_angle) swing arc
     impact: bool = False
     lying: bool = False
     fade: int = 0          # 0..3 dither steps
+    poof: int = 0          # 0..3 smoke puff growing around a fallen body
 
 
 @dataclass
@@ -308,18 +309,43 @@ def render_lying(spec, facing, pose):
     cv.over(rot, ox, oy)
     if pose.flash:
         whiten(cv)
-    return dither_fade(cv, pose.fade)
+    dither_fade(cv, pose.fade)
+    if pose.poof:
+        smoke(cv, 16, GROUND - 3, pose.poof)
+    return cv
+
+
+def smoke(cv, cx, cy, step):
+    """Puffs of smoke that swell and rise as the body vanishes (step 1..3)."""
+    puffs = [(-7, 0), (-3, -2), (1, 0), (5, -2), (8, 1), (-1, -4)]
+    r = {1: 2.2, 2: 3.0, 3: 3.4}[step]
+    a = {1: 240, 2: 200, 3: 120}[step]
+    rise = (step - 1) * 2
+    for i, (dx, dy) in enumerate(puffs):
+        if step == 1 and i % 2:
+            continue
+        spread = 1 + 0.25 * (step - 1)
+        px, py = cx + dx * spread, cy + dy - rise
+        rr = r - (0.6 if i % 3 == 2 else 0)
+        for y in range(int(py - rr - 1), int(py + rr + 2)):
+            for x in range(int(px - rr - 1), int(px + rr + 2)):
+                d = ((x + .5 - px) ** 2 + (y + .5 - py) ** 2) ** 0.5
+                if d <= rr:
+                    k = 4 if y + .5 < py else 3
+                    cv.set(x, y, color("stone", k, alpha=a))
 
 
 # ------------------------------------------------------------------ animation set
 
 def poses(spec: Spec):
     rest = Pose()
-    idle = [rest, replace(rest, oy=0, wpn=42),
-            replace(rest, oy=1, crouch=0, arm=172, wpn=46), replace(rest, oy=1, wpn=44)]
-    # idle breathing: shift torso/head by 1px on frames 2-3 via crouch
-    idle = [replace(idle[0]), replace(idle[1]), replace(idle[2], oy=0, crouch=1),
-            replace(idle[3], oy=0, crouch=1)]
+    # idle breathing over 8 frames: body sinks 1px for half the cycle, the weapon sways with it
+    # and the character blinks once per loop
+    breath = [0, 0, 0, 1, 1, 1, 1, 0]
+    sway = [40, 41, 43, 45, 46, 45, 43, 41]
+    idle = [replace(rest, crouch=c, wpn=w, arm=170 + (2 if c else 0), off_arm=175 - c,
+                    face="blink" if i == 6 else "normal")
+            for i, (c, w) in enumerate(zip(breath, sway))]
     attack = [
         replace(rest, ox=-1, arm=-10, wpn=-40, face="angry"),
         replace(rest, ox=-1, crouch=1, arm=-25, wpn=-70, face="angry"),
@@ -336,8 +362,9 @@ def poses(spec: Spec):
              replace(rest, ox=-2, arm=178, wpn=100, face="pain"),
              replace(rest, ox=-1, crouch=3, oy=0, arm=178, wpn=120, off_arm=178, face="dead"),
              replace(rest, lying=True),
-             replace(rest, lying=True, fade=1),
-             replace(rest, lying=True, fade=2)]
+             replace(rest, lying=True, fade=1, poof=1),
+             replace(rest, lying=True, fade=2, poof=2),
+             replace(rest, lying=True, fade=3, poof=3)]
     return {"Idle": idle, "Attack": attack, "Hit": hit, "Death": death}
 
 

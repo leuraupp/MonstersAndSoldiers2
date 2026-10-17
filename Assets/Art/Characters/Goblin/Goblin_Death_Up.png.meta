@@ -259,6 +259,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Goblin_Death_Up_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d26e88412c850cd4c8b0fc9fa66c42e6
+      internalID: 997448781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -279,6 +301,7 @@ TextureImporter:
       Goblin_Death_Up_3: -3160192036070490508
       Goblin_Death_Up_4: 81622596937802854
       Goblin_Death_Up_5: -4627121586111193952
+      Goblin_Death_Up_6: 997448781
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -15,6 +15,7 @@ using UnityEngine.UI;
 /// </summary>
 public static class GeneratedMenuSetup {
     private const string ScenePath = "Assets/Scenes/MainMenu/MainMenu.unity";
+    private static readonly bool ShowActors = false;
     private const string LayoutPath = "Assets/Art/UI/Original/TitleLayout.json";
     private const float Px = 4f; // 1 pixel da arte = 4 px no Canvas de 1920x1080
 
@@ -116,9 +117,12 @@ public static class GeneratedMenuSetup {
                 Animate(f, flag, 6f, i);
             }
 
-            // Personagens e vaga-lumes andam junto com o chão da frente.
+            // Personagens e vaga-lumes andam junto com o chão da frente. Os personagens estão desligados
+            // (ShowActors): o Leonardo preferiu o fundo limpo, sem soldados e monstros no menu.
+            ActorInfo[] shownActors = ShowActors ? layout.actors : new ActorInfo[0];
+            int actorCount = shownActors.Length;
             Transform actors = Group(layers["Near"], "MenuActors");
-            foreach (ActorInfo actor in layout.actors) {
+            foreach (ActorInfo actor in shownActors) {
                 Sprite[] frames = Sprites(actor.sheet);
                 RectTransform rect = NewImage(actors, actor.name, frames[0]);
                 rect.anchorMin = rect.anchorMax = Vector2.zero;
@@ -152,8 +156,8 @@ public static class GeneratedMenuSetup {
             logoRect.anchoredPosition = new Vector2(0f, -88f);
 
             // Botões: texto já vem desenhado na arte, então o TMP filho fica desligado.
-            // Quatro botões (Jogar, Opções, Créditos, Sair) entre o logo e os personagens.
-            float y = 50f;
+            // Quatro botões (Jogar, Opções, Créditos, Sair) abaixo do logo.
+            float y = 40f;
             var buttonRects = new List<RectTransform>();
             foreach (var (objectName, sheet) in Buttons) {
                 Transform t = root.Find(objectName);
@@ -170,7 +174,7 @@ public static class GeneratedMenuSetup {
                 var rect = (RectTransform)t;
                 rect.sizeDelta = new Vector2(states[0].rect.width * Px, states[0].rect.height * Px);
                 rect.anchoredPosition = new Vector2(0f, y);
-                y -= 96f;
+                y -= 112f;
                 foreach (TMPro.TMP_Text text in t.GetComponentsInChildren<TMPro.TMP_Text>(true)) {
                     text.gameObject.SetActive(false);
                 }
@@ -200,7 +204,7 @@ public static class GeneratedMenuSetup {
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
-            return $"MainMenu atualizado ({Layers.Length} camadas, {layout.actors.Length} personagens, {buttonRects.Count} botões)";
+            return $"MainMenu atualizado ({Layers.Length} camadas, {actorCount} personagens, {buttonRects.Count} botões)";
         } finally {
             if (openedHere) EditorSceneManager.CloseScene(scene, true);
         }

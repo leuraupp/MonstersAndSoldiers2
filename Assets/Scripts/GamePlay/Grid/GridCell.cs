@@ -14,9 +14,11 @@ public class GridCell : MonoBehaviour {
     [Tooltip("Filhos com o nome do ocupante: Slime, Goblin, Orc, Soldier")]
     [SerializeField] private List<GameObject> sprites;
     [SerializeField] private SpriteRenderer BGColor;
+    [Tooltip("Tufo de grama mostrado quando o jogador marca a casa com o botão direito")]
+    [SerializeField] private GameObject grass;
     [SerializeField] private Color highlightColor = Color.yellow;
     [SerializeField] private Color soldierColor = new Color(0.55f, 0.72f, 0.9f);
-    [SerializeField] private Color grassColor = new Color(0.55f, 0.78f, 0.45f);
+    [SerializeField] private Color grassColor = Color.white;
     [SerializeField] private Color errorColor = new Color(152f / 255f, 54f / 255f, 54f / 255f);
     [SerializeField] private Color outlineColor = new Color(0.9f, 0.15f, 0.15f);
     [SerializeField, Range(0f, 1f)] private float highlightStrength = 0.45f;
@@ -38,6 +40,7 @@ public class GridCell : MonoBehaviour {
         baseColor = emptyColor;
         name = $"Cell {position}";
         ShowOccupant(null);
+        ShowGrass(false);
         RefreshColor();
     }
 
@@ -46,6 +49,7 @@ public class GridCell : MonoBehaviour {
         baseColor = color;
         name = $"{type} {Position}";
         ShowOccupant(type.ToString());
+        ShowGrass(false);
         RefreshColor();
     }
 
@@ -57,6 +61,7 @@ public class GridCell : MonoBehaviour {
             _ => emptyColor
         };
         ShowOccupant(state == CellState.Soldier ? SoldierSpriteName : null);
+        ShowGrass(state == CellState.Grass);
         RefreshColor();
     }
 
@@ -124,6 +129,10 @@ public class GridCell : MonoBehaviour {
             if (occupant == null) occupant = sprite.AddComponent<AnimationSwitcher>();
             occupant.Prefix = spriteName;
         }
+    }
+
+    private void ShowGrass(bool visible) {
+        if (grass != null && grass.activeSelf != visible) grass.SetActive(visible);
     }
 
     // Moldura vazada gerada em código, desenhada por cima do fundo da casa e dos personagens.

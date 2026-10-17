@@ -18,6 +18,7 @@ import slime
 import characters
 import ui
 import title
+import grass
 import lineup  # noqa: F401  (builds the lineup preview on import)
 
 if __name__ == "__main__":
@@ -26,3 +27,4 @@ if __name__ == "__main__":
         characters.build(spec)
     ui.main()
     title.build()
+    grass.main()

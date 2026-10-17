@@ -11,6 +11,7 @@ using UnityEngine;
 /// </summary>
 public class GeneratedArtImporter : AssetPostprocessor {
     public const string CharactersRoot = "Assets/Art/Characters/";
+    public const string BoardRoot = "Assets/Art/Board/Original/"; // enfeites da casa (grama), quadros de 32 como os personagens
     public const string UIRoot = "Assets/Art/UI/Original/";
 
     public const int CharacterFrame = 32;
@@ -38,7 +39,8 @@ public class GeneratedArtImporter : AssetPostprocessor {
         { "Panel", new Vector4(8, 8, 8, 8) },
     };
 
-    private static bool IsCharacter(string path) => path.StartsWith(CharactersRoot) && path.EndsWith(".png");
+    private static bool IsCharacter(string path) =>
+        (path.StartsWith(CharactersRoot) || path.StartsWith(BoardRoot)) && path.EndsWith(".png");
     private static bool IsUI(string path) => path.StartsWith(UIRoot) && path.EndsWith(".png");
 
     private void OnPreprocessTexture() {

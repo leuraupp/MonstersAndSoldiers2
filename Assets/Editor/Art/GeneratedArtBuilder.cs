@@ -83,6 +83,7 @@ public static class GeneratedArtBuilder {
     private static void ReimportGeneratedTextures() {
         string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] {
             GeneratedArtImporter.CharactersRoot.TrimEnd('/'), GeneratedArtImporter.UIRoot.TrimEnd('/'),
+            GeneratedArtImporter.BoardRoot.TrimEnd('/'),
         });
         AssetDatabase.StartAssetEditing();
         try {
@@ -196,27 +197,77 @@ public static class GeneratedArtBuilder {
                 }
                 log.AppendLine($"GridCell/{prefix}: {art}");
             }
+            SetupGrass(root, log);
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         } finally {
             PrefabUtility.UnloadPrefabContents(root);
         }
     }
 
+    // Tufo de grama da casa marcada com o botão direito (Tools/art/grass.py): filho "Grass", desligado,
+    // que o GridCell liga quando a casa vira grama. Fica fora da lista de ocupantes, que só tem personagens.
+    private static void SetupGrass(GameObject root, StringBuilder log) {
+        Sprite[] grow = LoadFrames($"{GeneratedArtImporter.BoardRoot}Grass_Grow.png");
+        Sprite[] sway = LoadFrames($"{GeneratedArtImporter.BoardRoot}Grass_Sway.png");
+        if (grow.Length == 0 || sway.Length == 0) {
+            log.AppendLine("AVISO: sem quadros da grama (rode Tools/art/grass.py)");
+            return;
+        }
+        Transform grass = root.transform.Find("Grass");
+        if (grass == null) {
+            grass = new GameObject("Grass", typeof(SpriteRenderer), typeof(GrassTuft)).transform;
+            grass.SetParent(root.transform, false);
+        }
+        grass.localPosition = Vector3.zero;
+        grass.localScale = Vector3.one;
+        var sr = grass.GetComponent<SpriteRenderer>();
+        sr.sprite = sway[0];
+        SpriteRenderer bg = root.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.name == "BG");
+        if (bg != null) {
+            sr.sortingLayerID = bg.sortingLayerID;
+            sr.sortingOrder = bg.sortingOrder + 1;
+        }
+        var tuft = new SerializedObject(grass.GetComponent<GrassTuft>());
+        SetArray(tuft.FindProperty("growFrames"), grow);
+        SetArray(tuft.FindProperty("swayFrames"), sway);
+        tuft.ApplyModifiedPropertiesWithoutUndo();
+        grass.gameObject.SetActive(false);
+
+        var cell = new SerializedObject(root.GetComponent<GridCell>());
+        cell.FindProperty("grass").objectReferenceValue = grass.gameObject;
+        // O tufo já marca a casa; tingir o fundo laranja de verde deixava a casa cor de oliva.
+        cell.FindProperty("grassColor").colorValue = Color.white;
+        cell.ApplyModifiedPropertiesWithoutUndo();
+        log.AppendLine($"GridCell/Grass: {grow.Length} quadros brotando + {sway.Length} balançando");
+    }
+
+    private static void SetArray(SerializedProperty list, Sprite[] sprites) {
+        list.arraySize = sprites.Length;
+        for (int i = 0; i < sprites.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = sprites[i];
+    }
+
     /// <summary>
     /// Renderiza uma casa com cada personagem numa cena de preview (não mexe na cena aberta)
     /// e salva em Temp/ArtBridge/gridcell_preview.png.
     /// </summary>
-    public static string CapturePreview() {
+    public static string CapturePreview(string outDir = null) {
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         UnityEngine.SceneManagement.Scene scene = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
-        var rt = new RenderTexture(640, 160, 24);
+        var rt = new RenderTexture(800, 160, 24);
         try {
-            for (int i = 0; i < Characters.Length; i++) {
+            // Uma casa por personagem e, por último, uma casa marcada com grama (fundo verde como no jogo).
+            for (int i = 0; i <= Characters.Length; i++) {
+                bool grassCell = i == Characters.Length;
+                string shown = grassCell ? "Grass" : Characters[i].prefix;
                 var cell = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-                cell.transform.position = new Vector3(i * 1.4f - 2.1f, 0, 0);
+                cell.transform.position = new Vector3(i * 1.4f - 2.8f, 0, 0);
                 foreach (Transform t in cell.GetComponentsInChildren<Transform>(true)) {
-                    if (t.parent != cell.transform || t.name == "BG") continue;
-                    t.gameObject.SetActive(t.name == Characters[i].prefix);
+                    if (t.parent != cell.transform) continue;
+                    if (t.name == "BG") {
+                        if (grassCell && t.TryGetComponent(out SpriteRenderer bg)) bg.color = Color.white;
+                        continue;
+                    }
+                    t.gameObject.SetActive(t.name == shown);
                 }
             }
             var camGo = new GameObject("Camera", typeof(Camera));
@@ -236,7 +287,8 @@ public static class GeneratedArtBuilder {
             tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
             tex.Apply();
             RenderTexture.active = null;
-            string path = Path.Combine(BridgeDir, "gridcell_preview.png");
+            Directory.CreateDirectory(outDir ?? BridgeDir);
+            string path = Path.Combine(outDir ?? BridgeDir, "gridcell_preview.png");
             File.WriteAllBytes(path, tex.EncodeToPNG());
             UnityEngine.Object.DestroyImmediate(tex);
             return path;

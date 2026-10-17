@@ -16,8 +16,9 @@ using UnityEngine.UI;
 public static class Phase3UISetup {
     private const string MatchScenePath = "Assets/Scenes/Gameplay/LevelTest/level_01_test.unity";
     private const string MenuScenePath = "Assets/Scenes/MainMenu/MainMenu.unity";
-    private const string FontPath = "Assets/Art/Fonts/FantasyRPGtext (size 8) SDF.asset";
-    private const string TitleFontPath = "Assets/Art/Fonts/FantasyRPGtitle (size 11) SDF.asset";
+    // Pixelify Sans: pixelada e com os acentos do português (a FantasyRPG não tem maiúsculas acentuadas).
+    private const string FontPath = PixelFontBuilder.TextFontPath;
+    private const string TitleFontPath = PixelFontBuilder.TitleFontPath;
     private const float Px = 4f; // 1 pixel da arte = 4 px no Canvas
 
     private static readonly Color Ink = new Color32(0xF4, 0xE9, 0xD0, 0xFF);
@@ -32,6 +33,8 @@ public static class Phase3UISetup {
 
     public static void BuildAllBatch() {
         try {
+            PixelFontBuilder.Build();
+            Debug.Log(PixelFontBuilder.ApplyEverywhere());
             Debug.Log(BuildMatchScene());
             Debug.Log(BuildMenuScene());
             Directory.CreateDirectory("Logs/Phase3");
@@ -94,7 +97,7 @@ public static class Phase3UISetup {
         hintText.rectTransform.anchorMin = Vector2.zero;
         hintText.rectTransform.anchorMax = Vector2.one;
         hintText.rectTransform.offsetMin = new Vector2(52, 104);  // acima do botão
-        hintText.rectTransform.offsetMax = new Vector2(-52, -84); // abaixo da faixa do título do painel
+        hintText.rectTransform.offsetMax = new Vector2(-52, -104); // abaixo da faixa do título do painel
         Button hintOk = TextButton(balloon, "Ok", "Entendi", -350);
         Link(hint, ("balloon", balloon.gameObject), ("text", hintText), ("closeButton", hintOk));
 
@@ -250,7 +253,6 @@ public static class Phase3UISetup {
             t.font = Font(FontPath);
             t.fontSize = 28;
             t.color = Ink;
-            t.fontStyle = FontStyles.UpperCase;
         }
         GameObject toggleGo = DefaultControls.CreateToggle(new DefaultControls.Resources());
         toggleGo.name = "Fullscreen";
@@ -322,7 +324,6 @@ public static class Phase3UISetup {
         text.color = color;
         text.raycastTarget = false;
         text.textWrappingMode = TextWrappingModes.NoWrap;
-        text.fontStyle = FontStyles.UpperCase; // as minúsculas da fonte pixel ficam ilegíveis
         return text;
     }
 

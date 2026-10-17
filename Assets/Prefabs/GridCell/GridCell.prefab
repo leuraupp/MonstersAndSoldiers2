@@ -27,14 +27,15 @@ Transform:
   m_GameObject: {fileID: 1773798895549946709}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.15, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7596797656772884926
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -53,6 +54,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -74,10 +77,12 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 668537061
   m_SortingLayer: 1
   m_SortingOrder: 1
-  m_Sprite: {fileID: -1728530223, guid: eaf8b8245cdd6184699985d6fded8600, type: 3}
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -3278127311083347442, guid: 4d53a4fc3bbf0cd45b68e70b81e3c53f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -86,7 +91,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &660676530279858004
 Animator:
@@ -98,7 +102,7 @@ Animator:
   m_GameObject: {fileID: 1773798895549946709}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 127f5f2b6b815e64890733ef9163265d, type: 2}
+  m_Controller: {fileID: 9100000, guid: 88fa98705dd36ff4cbe6888b210e3605, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -138,14 +142,15 @@ Transform:
   m_GameObject: {fileID: 1986445969153075641}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.115, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7716668137314757367
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -164,6 +169,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -185,9 +192,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 668537061
   m_SortingLayer: 1
   m_SortingOrder: 1
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -890828213, guid: 3916a4c38e2ae9746b3a02557fdf4ff0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -197,7 +206,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &8600394960993332367
 Animator:
@@ -209,7 +217,7 @@ Animator:
   m_GameObject: {fileID: 1986445969153075641}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1bbb5d213a32a004b8090afd9eec60a0, type: 2}
+  m_Controller: {fileID: 9100000, guid: b5a5be5d57f42004da7fe512cf6969c1, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -233,9 +241,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4775538da46085543a17e99a45be6e8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkController: {fileID: 9100000, guid: 1bbb5d213a32a004b8090afd9eec60a0, type: 2}
-  attackController: {fileID: 9100000, guid: a8d8239c67cbbf443b75ecebe0119b9c, type: 2}
+  walkController: {fileID: 9100000, guid: b5a5be5d57f42004da7fe512cf6969c1, type: 2}
+  attackController: {fileID: 0}
   attackAnimationDuration: 1.2
+  holdAfterClip: 0.25
   attackSuccessScale: 1.2
   attackFailScale: 0.8
 --- !u!1 &2823262226412917788
@@ -265,14 +274,15 @@ Transform:
   m_GameObject: {fileID: 2823262226412917788}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.06, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &312460599080783217
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -291,6 +301,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -312,10 +324,12 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 668537061
   m_SortingLayer: 1
   m_SortingOrder: 1
-  m_Sprite: {fileID: 203370123, guid: b6b9ea32b67f3594687792685531b36b, type: 3}
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -1061196909414044372, guid: 84e9fe98bcd5a9f408298b7e228bf513, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -324,7 +338,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &2031922072956088314
 Animator:
@@ -336,7 +349,7 @@ Animator:
   m_GameObject: {fileID: 2823262226412917788}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2821202e10587ee4e8e32831fad05ab2, type: 2}
+  m_Controller: {fileID: 9100000, guid: fa293488bb4721249be794705fa77e90, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -382,6 +395,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &702110222659514343
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -400,6 +414,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -421,9 +437,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 668537061
   m_SortingLayer: 1
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -917838004, guid: a2e8764c8d5d1dd4f8826df6788e1200, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -433,7 +451,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4837489230515387054
 GameObject:
@@ -513,8 +530,11 @@ MonoBehaviour:
   - {fileID: 6028817256958656443}
   BGColor: {fileID: 702110222659514343}
   highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  leftClickColor: {r: 0, g: 1, b: 0, a: 1}
-  rightClickColor: {r: 1, g: 0, b: 0, a: 1}
+  soldierColor: {r: 0.55, g: 0.72, b: 0.9, a: 1}
+  grassColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+  errorColor: {r: 0.59607846, g: 0.21176471, b: 0.21176471, a: 1}
+  outlineColor: {r: 0.9, g: 0.15, b: 0.15, a: 1}
+  highlightStrength: 0.45
   baseSize: 1
 --- !u!1 &6028817256958656443
 GameObject:
@@ -544,14 +564,15 @@ Transform:
   m_GameObject: {fileID: 6028817256958656443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.091, z: 0}
-  m_LocalScale: {x: 1.769, y: 1.769, z: 1.769}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8994542564016949652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4915375982965099319
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -570,6 +591,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -591,10 +614,12 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 668537061
   m_SortingLayer: 1
   m_SortingOrder: 1
-  m_Sprite: {fileID: 4234663633039187050, guid: 7b0bcd97f70e2e04ba7cee02bac1452f, type: 3}
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 4890020307293531763, guid: 4e169847acb77764a99760930f5d77ab, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -603,7 +628,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &5599125359761766437
 Animator:
@@ -615,7 +639,7 @@ Animator:
   m_GameObject: {fileID: 6028817256958656443}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 991ba7d3b73eb6149b19e1f11dce9b93, type: 2}
+  m_Controller: {fileID: 9100000, guid: 820855334f5dcc94b91ebe904133cc3d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -639,8 +663,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4775538da46085543a17e99a45be6e8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkController: {fileID: 9100000, guid: 4dbd479268511f648adb89b026ed0890, type: 2}
-  attackController: {fileID: 9100000, guid: 991ba7d3b73eb6149b19e1f11dce9b93, type: 2}
+  walkController: {fileID: 9100000, guid: 820855334f5dcc94b91ebe904133cc3d, type: 2}
+  attackController: {fileID: 0}
   attackAnimationDuration: 1.2
+  holdAfterClip: 0.25
   attackSuccessScale: 1.2
   attackFailScale: 0.8

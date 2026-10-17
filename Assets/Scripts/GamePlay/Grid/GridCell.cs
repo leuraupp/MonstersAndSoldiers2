@@ -70,10 +70,17 @@ public class GridCell : MonoBehaviour {
         if (occupant != null) occupant.Face(direction);
     }
 
-    /// <summary>Toca o ataque; retorna false (sem chamar o callback) se a casa não tem personagem.</summary>
+    /// <summary>
+    /// Toca o ataque; retorna false (sem chamar o callback) se a casa não tem personagem.
+    /// Ataque certo: os monstros morrem. Ataque errado: todo mundo leva dano.
+    /// </summary>
     public bool PlayAttack(bool success, Action onComplete) {
         if (occupant == null) return false;
-        occupant.PlayAttack(success, onComplete);
+        bool isSoldier = occupant.Prefix == SoldierSpriteName;
+        AttackReaction reaction = success
+            ? (isSoldier ? AttackReaction.None : AttackReaction.Death)
+            : AttackReaction.Hit;
+        occupant.PlayAttack(success, reaction, onComplete);
         return true;
     }
 

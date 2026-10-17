@@ -16,12 +16,15 @@ using UnityEngine.TestTools;
 public class GameplaySmokeTests {
     private const string ScenePath = "Assets/Scenes/Gameplay/LevelTest/level_01_test.unity";
 
+    // Folgado de propósito: com o Editor em segundo plano a Unity reduz o frame rate e tudo fica mais lento.
+    private const float Timeout = 30f;
+
     [UnityTest]
     public IEnumerator WrongAttack_ThenSolve_AdvancesToNextLevel() {
         yield return new EnterPlayMode();
 
         EditorSceneManager.LoadSceneInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
-        float deadline = Time.realtimeSinceStartup + 5f;
+        float deadline = Time.realtimeSinceStartup + Timeout;
         while (GridController.Instance == null || GridController.Instance.Board == null) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "Cena não carregou o tabuleiro.");
             yield return null;
@@ -36,7 +39,7 @@ public class GameplaySmokeTests {
         // Ataque errado: tabuleiro vazio continua no mesmo nível.
         GameManager.Instance.OnAttackButtonPressed();
         Assert.IsTrue(GameManager.Instance.IsAnimating);
-        deadline = Time.realtimeSinceStartup + 5f;
+        deadline = Time.realtimeSinceStartup + Timeout;
         while (GameManager.Instance.IsAnimating) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "O ataque não terminou.");
             yield return null;
@@ -52,7 +55,7 @@ public class GameplaySmokeTests {
 
         GameManager.Instance.OnAttackButtonPressed();
         Assert.AreEqual(2, GameManager.Instance.AttackAttempts, "O segundo ataque não começou.");
-        deadline = Time.realtimeSinceStartup + 10f;
+        deadline = Time.realtimeSinceStartup + Timeout;
         while (grid.CurrentLevel == firstLevel || grid.IsTransitioning) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "Não avançou para o próximo nível.");
             yield return null;
@@ -63,7 +66,7 @@ public class GameplaySmokeTests {
         // Nível 2 tem Goblins, que não têm controller de ataque: o ataque precisa terminar sem erro.
         GameManager.Instance.OnAttackButtonPressed();
         Assert.IsTrue(GameManager.Instance.IsAnimating);
-        deadline = Time.realtimeSinceStartup + 5f;
+        deadline = Time.realtimeSinceStartup + Timeout;
         while (GameManager.Instance.IsAnimating) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "O ataque não terminou.");
             yield return null;
@@ -71,6 +74,94 @@ public class GameplaySmokeTests {
         Assert.AreEqual(1, GameManager.Instance.AttackAttempts);
 
         yield return new ExitPlayMode();
+    }
+
+    [UnityTest]
+    public IEnumerator ProceduralMode_ShowsClues_RestartsSameSeed_AndAdvances() {
+        yield return new EnterPlayMode();
+
+        EditorSceneManager.LoadSceneInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
+        float deadline = Time.realtimeSinceStartup + Timeout;
+        while (GridController.Instance == null || GridController.Instance.Board == null) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "Cena não carregou o tabuleiro.");
+            yield return null;
+        }
+
+        GridController grid = GridController.Instance;
+        LevelManager levels = LevelManager.Instance;
+        levels.StartProcedural(Difficulty.Hard, 12345);
+        yield return null;
+
+        GeneratedPuzzle puzzle = levels.CurrentPuzzle;
+        BoardModel board = grid.Board;
+        Assert.AreEqual(12345, levels.CurrentSeed);
+        Assert.IsNull(grid.CurrentLevel);
+        Assert.AreEqual(8, board.Rows);
+        Assert.AreEqual(8, board.Cols);
+        Assert.IsTrue(board.HasClues);
+
+        // Pistas: 8 à esquerda e 8 em cima, com os números do mapa.
+        TMPro.TextMeshPro[] labels = grid.CurrentGrid.GetComponentsInChildren<TMPro.TextMeshPro>();
+        Assert.AreEqual(16, labels.Length);
+        Assert.AreEqual(board.RowClues[0].ToString(), System.Array.Find(labels, l => l.name == "Row Clue 0").text);
+
+        // Dois soldados encostados ganham contorno vermelho; ao tirar um, o contorno some.
+        GridPos a = default, b = default;
+        bool found = false;
+        for (int r = 0; r < board.Rows && !found; r++) {
+            for (int c = 0; c + 1 < board.Cols && !found; c++) {
+                a = new GridPos(r, c);
+                b = new GridPos(r, c + 1);
+                found = !board.IsMonster(a) && !board.IsMonster(b);
+            }
+        }
+        Assert.IsTrue(found);
+        board.SetState(a, CellState.Soldier);
+        board.SetState(b, CellState.Soldier);
+        Assert.AreEqual(2, CountVisibleOutlines(grid.CurrentGrid));
+        board.SetState(b, CellState.Empty);
+        Assert.AreEqual(0, CountVisibleOutlines(grid.CurrentGrid));
+
+        // Ataque errado pisca as pistas sem erro e continua no mesmo mapa.
+        GameManager.Instance.OnAttackButtonPressed();
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (GameManager.Instance.IsAnimating) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "O ataque não terminou.");
+            yield return null;
+        }
+        Assert.AreSame(puzzle, levels.CurrentPuzzle);
+
+        // Reiniciar: mesmo mapa, tabuleiro limpo.
+        levels.ReloadCurrentLevel();
+        yield return null;
+        Assert.AreNotSame(board, grid.Board);
+        board = grid.Board;
+        Assert.AreEqual(0, board.SoldierCount);
+        Assert.AreEqual(12345, levels.CurrentSeed);
+        CollectionAssert.AreEquivalent(puzzle.Monsters, board.Monsters);
+
+        // Solução certa: avança para um novo mapa (nova seed) na mesma dificuldade.
+        foreach (GridPos p in puzzle.Solution) Assert.IsTrue(board.SetState(p, CellState.Soldier));
+        GameManager.Instance.OnAttackButtonPressed();
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (grid.Board == board || grid.IsTransitioning) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "Não avançou para o próximo mapa.");
+            yield return null;
+        }
+        Assert.AreNotSame(puzzle, levels.CurrentPuzzle);
+        Assert.AreEqual(Difficulty.Hard, levels.CurrentDifficulty);
+        Assert.AreEqual(8, grid.Board.Rows);
+        Assert.AreEqual(0, grid.Board.SoldierCount);
+
+        yield return new ExitPlayMode();
+    }
+
+    private static int CountVisibleOutlines(GridView view) {
+        int count = 0;
+        foreach (SpriteRenderer sr in view.GetComponentsInChildren<SpriteRenderer>()) {
+            if (sr.name == "Outline" && sr.enabled) count++;
+        }
+        return count;
     }
 
     [UnityTest]
@@ -87,7 +178,7 @@ public class GameplaySmokeTests {
 
         try {
             EditorSceneManager.LoadSceneInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
-            float deadline = Time.realtimeSinceStartup + 5f;
+            float deadline = Time.realtimeSinceStartup + Timeout;
             while (GridController.Instance == null || GridController.Instance.Board == null) {
                 Assert.Less(Time.realtimeSinceStartup, deadline, "Cena não carregou o tabuleiro.");
                 yield return null;

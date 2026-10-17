@@ -1,28 +1,79 @@
 ﻿<#
 .SYNOPSIS
-    Roda os testes do projeto em uma cópia espelhada, para funcionar com o Editor aberto.
+    Roda os testes EditMode do projeto, sem copiar nada.
 
 .DESCRIPTION
-    A Unity não deixa duas instâncias abrirem a mesma pasta. Este script espelha Assets,
-    Packages e ProjectSettings para uma pasta de cópia (a Library só na primeira vez, para não
-    reimportar tudo) e roda os testes nela em batchmode.
+    Editor aberto: pede para Assets/Editor/TestBridge.cs rodar os testes no próprio Editor
+    (ele dá Refresh antes, então compila o que mudou) e espera o resultado.
+    Editor fechado: roda em batchmode direto na pasta do projeto.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File Tools/run-tests.ps1
-    powershell -ExecutionPolicy Bypass -File Tools/run-tests.ps1 -Filter GameplaySmokeTests
-    powershell -ExecutionPolicy Bypass -File Tools/run-tests.ps1 -Build
+    powershell -ExecutionPolicy Bypass -File Tools/run-tests.ps1 -Filter PuzzleSolverTests
+    powershell -ExecutionPolicy Bypass -File Tools/run-tests.ps1 -Build   (só com o Editor fechado)
 #>
 param(
     [string]$Filter = "",
     [switch]$Build,
     [string]$UnityExe = "",
-    [string]$CopyDir = (Join-Path $env:LOCALAPPDATA "MonstersAndSoldiers2-TestCopy")
+    [int]$TimeoutSec = 600
 )
 
 $ErrorActionPreference = "Stop"
 $projectDir = Split-Path -Parent $PSScriptRoot
 
-# Editor: mesma versão do ProjectVersion.txt, procurada nas pastas do Unity Hub.
+# O Editor segura Temp\UnityLockfile enquanto o projeto está aberto.
+function Test-EditorOpen {
+    $lock = Join-Path $projectDir "Temp\UnityLockfile"
+    if (-not (Test-Path $lock)) { return $false }
+    try {
+        $stream = [System.IO.File]::Open($lock, "Open", "ReadWrite", "None")
+        $stream.Close()
+        return $false
+    } catch {
+        return $true
+    }
+}
+
+if (Test-EditorOpen) {
+    if ($Build) { throw "-Build precisa do Editor fechado." }
+
+    $bridge = Join-Path $projectDir "Temp\TestBridge"
+    $result = Join-Path $bridge "result.txt"
+    New-Item -ItemType Directory -Force $bridge | Out-Null
+    Remove-Item $result -ErrorAction SilentlyContinue
+    [System.IO.File]::WriteAllText((Join-Path $bridge "request.txt"), $Filter)
+    Write-Host "Pedido enviado ao Editor aberto. Aguardando ..."
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    $status = ""
+    while ((Get-Date) -lt $deadline) {
+        Start-Sleep -Milliseconds 500
+        if (-not (Test-Path $result)) { continue }
+        $text = Get-Content $result -Raw -Encoding UTF8
+        if ($text -match "^status: (\S+)") { $status = $Matches[1] }
+        if ($status -in "passed", "failed", "compile-error") { break }
+    }
+
+    if ($status -notin "passed", "failed", "compile-error") {
+        throw "O Editor não respondeu em $TimeoutSec s (status: '$status'). Ele está em Play Mode ou com um diálogo aberto?"
+    }
+
+    $body = ($text -split "`n", 2)[1]
+    if ($status -eq "compile-error") {
+        Write-Host "Erros de compilação:" -ForegroundColor Red
+        Write-Host $body -ForegroundColor Red
+        exit 1
+    }
+    foreach ($line in $body -split "`n") {
+        if ($line -like "FALHOU*") { Write-Host $line -ForegroundColor Red } elseif ($line) { Write-Host $line }
+    }
+    Write-Host "Resultado completo: $bridge\results.xml"
+    if ($status -eq "passed") { exit 0 } else { exit 1 }
+}
+
+# ---------- Editor fechado: batchmode na própria pasta ----------
+
 if (-not $UnityExe) {
     $version = (Select-String -Path "$projectDir\ProjectSettings\ProjectVersion.txt" -Pattern "m_EditorVersion: (.+)").Matches[0].Groups[1].Value.Trim()
     $roots = @("E:\Unity Installs", "C:\Program Files\Unity\Hub\Editor")
@@ -35,30 +86,17 @@ if (-not $UnityExe) {
     if (-not $UnityExe) { throw "Unity $version não encontrado. Use -UnityExe <caminho>." }
 }
 
-# Espelha o projeto (robocopy: códigos < 8 são sucesso).
-Write-Host "Sincronizando cópia em $CopyDir ..."
-foreach ($dir in "Assets", "Packages", "ProjectSettings") {
-    robocopy "$projectDir\$dir" "$CopyDir\$dir" /MIR /NFL /NDL /NJH /NJS /NP | Out-Null
-    if ($LASTEXITCODE -ge 8) { throw "Falha ao copiar $dir (robocopy $LASTEXITCODE)." }
-}
-if (-not (Test-Path "$CopyDir\Library") -and (Test-Path "$projectDir\Library")) {
-    Write-Host "Primeira execução: copiando a Library (evita reimportar tudo) ..."
-    # Bee guarda caminhos absolutos do projeto original; a cópia reconstrói esse cache.
-    robocopy "$projectDir\Library" "$CopyDir\Library" /MIR /NFL /NDL /NJH /NJS /NP /XD Bee /XF "*lock*" | Out-Null
-    if ($LASTEXITCODE -ge 8) { throw "Falha ao copiar Library (robocopy $LASTEXITCODE)." }
-}
-
-$outDir = Join-Path $CopyDir "TestOutput"
+$outDir = Join-Path $projectDir "Temp\TestOutput"
 New-Item -ItemType Directory -Force $outDir | Out-Null
 $results = Join-Path $outDir "editmode-results.xml"
 $log = Join-Path $outDir "unity-tests.log"
 Remove-Item $results -ErrorAction SilentlyContinue
 
-$unityArgs = @("-batchmode", "-projectPath", $CopyDir, "-runTests", "-testPlatform", "EditMode",
+$unityArgs = @("-batchmode", "-projectPath", $projectDir, "-runTests", "-testPlatform", "EditMode",
                "-testResults", $results, "-logFile", $log)
 if ($Filter) { $unityArgs += @("-testFilter", $Filter) }
 
-Write-Host "Rodando testes com $UnityExe ..."
+Write-Host "Editor fechado: rodando testes em batchmode com $UnityExe ..."
 & $UnityExe @unityArgs | Out-Null
 $testExit = $LASTEXITCODE
 
@@ -76,10 +114,11 @@ foreach ($case in $xml.SelectNodes("//test-case[@result='Failed']")) {
 
 if ($Build -and $testExit -eq 0) {
     $buildLog = Join-Path $outDir "unity-build.log"
+    $buildDir = Join-Path $projectDir "Builds\Windows"
     Write-Host "Gerando build de Windows ..."
-    & $UnityExe -batchmode -quit -projectPath $CopyDir -buildWindows64Player (Join-Path $outDir "Build\MonstersAndSoldiers.exe") -logFile $buildLog | Out-Null
+    & $UnityExe -batchmode -quit -projectPath $projectDir -buildWindows64Player (Join-Path $buildDir "MonstersAndSoldiers.exe") -logFile $buildLog | Out-Null
     if (Select-String -Path $buildLog -Pattern "Build Finished, Result: Success" -Quiet) {
-        Write-Host "Build OK: $outDir\Build"
+        Write-Host "Build OK: $buildDir"
     } else {
         Write-Host "Build falhou. Log: $buildLog" -ForegroundColor Red
         exit 1

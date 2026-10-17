@@ -25,6 +25,7 @@ public class GridController : MonoBehaviour {
     private GridView nextGrid;
     private Vector3 finalPosition;
 
+    /// <summary>Nível feito à mão em jogo. Null no modo procedural.</summary>
     public LevelData CurrentLevel { get; private set; }
     public GridView CurrentGrid => currentGrid;
     public BoardModel Board => currentGrid != null ? currentGrid.Board : null;
@@ -45,18 +46,23 @@ public class GridController : MonoBehaviour {
         if (Instance == this) Instance = null;
     }
 
-    public void GenerateGrid(LevelData levelData) {
-        CurrentLevel = levelData;
+    public void GenerateGrid(LevelData levelData) => GenerateGrid(levelData.CreateBoard(), levelData);
+
+    /// <summary>Mostra um tabuleiro já criado (modo procedural, ou nível feito à mão via <paramref name="level"/>).</summary>
+    public void GenerateGrid(BoardModel board, LevelData level = null) {
+        CurrentLevel = level;
         if (currentGrid != null) {
             Destroy(currentGrid.gameObject);
         }
         currentGrid = Instantiate(GridViewPrefab, gridParent);
         finalPosition = currentGrid.transform.position;
-        Initialize(currentGrid, levelData);
+        Initialize(currentGrid, board);
         BoardChanged?.Invoke(currentGrid.Board);
     }
 
-    public void TransitionToNextGrid(LevelData nextLevel) {
+    public void TransitionToNextGrid(LevelData nextLevel) => TransitionToNextGrid(nextLevel.CreateBoard(), nextLevel);
+
+    public void TransitionToNextGrid(BoardModel nextBoard, LevelData nextLevel = null) {
         if (IsTransitioning) return;
 
         nextGrid = Instantiate(GridViewPrefab, gridParent);
@@ -70,7 +76,7 @@ public class GridController : MonoBehaviour {
         nextGrid.transform.DOMove(finalPosition, transitionDuration).SetLink(nextGrid.gameObject).OnComplete(() => {
             if (oldGrid != null) Destroy(oldGrid.gameObject);
 
-            Initialize(nextGrid, nextLevel);
+            Initialize(nextGrid, nextBoard);
             currentGrid = nextGrid;
             nextGrid = null;
             CurrentLevel = nextLevel;
@@ -78,9 +84,9 @@ public class GridController : MonoBehaviour {
         });
     }
 
-    private void Initialize(GridView grid, LevelData level) {
+    private void Initialize(GridView grid, BoardModel board) {
         grid.InitializeGrid(
-            level.CreateBoard(),
+            board,
             grid.GetComponent<BoxCollider2D>().bounds,
             margin,
             spacing,

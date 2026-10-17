@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using MonstersAndSoldiers.Core;
+using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -19,6 +20,15 @@ public class GridView : MonoBehaviour {
     [SerializeField] private Color goblinColor = Color.yellow;
     [SerializeField] private Color orcColor = Color.red;
 
+    [Header("Clues")]
+    [SerializeField] private Color clueColor = Color.white;
+    [Tooltip("Linha/coluna com a contagem certa")]
+    [SerializeField] private Color clueDoneColor = new Color(1f, 1f, 1f, 0.35f);
+    [Tooltip("Linha/coluna com soldados demais")]
+    [SerializeField] private Color clueOverColor = new Color(1f, 0.35f, 0.35f);
+    [SerializeField] private Color clueFlashColor = new Color(0.9f, 0.15f, 0.15f);
+    [SerializeField] private int clueSortingOrder = 5;
+
     public BoardModel Board { get; private set; }
 
     private GridCell[,] cells;
@@ -26,6 +36,8 @@ public class GridView : MonoBehaviour {
     private float step;
     private Vector2 startPos;
     private GridPos? highlighted;
+    private TextMeshPro[] rowClueLabels;
+    private TextMeshPro[] colClueLabels;
 
     public void InitializeGrid(BoardModel board, Bounds boardBounds, float margin, float spacing, Vector2 boardOrigin) {
         Unbind();
@@ -36,15 +48,20 @@ public class GridView : MonoBehaviour {
         float availableWidth = boardBounds.size.x - (2 * margin);
         float availableHeight = boardBounds.size.y - (2 * margin);
 
+        // Com pistas, reserva uma coluna à esquerda e uma linha em cima para os números (GDD 8.3).
+        int clueSpace = board.HasClues ? 1 : 0;
+        int layoutCols = cols + clueSpace;
+        int layoutRows = rows + clueSpace;
+
         cellSize = Mathf.Min(
-            (availableWidth - (cols - 1) * spacing) / cols,
-            (availableHeight - (rows - 1) * spacing) / rows
+            (availableWidth - (layoutCols - 1) * spacing) / layoutCols,
+            (availableHeight - (layoutRows - 1) * spacing) / layoutRows
         );
         step = cellSize + spacing;
 
         startPos = boardOrigin + new Vector2(
-            -((cols - 1) * step) / 2 + 0.5f,
-            -((rows - 1) * step) / 2 - 0.5f
+            -((cols - 1) * step) / 2 + 0.5f + clueSpace * step / 2,
+            -((rows - 1) * step) / 2 - 0.5f - clueSpace * step / 2
         );
 
         cells = new GridCell[rows, cols];
@@ -70,6 +87,8 @@ public class GridView : MonoBehaviour {
             }
         }
 
+        if (board.HasClues) CreateClueLabels(delayOffset);
+        RefreshAllFeedback();
         board.CellChanged += OnCellChanged;
     }
 
@@ -85,6 +104,11 @@ public class GridView : MonoBehaviour {
         GridCell cell = cells[pos.Row, pos.Col];
         cell.SetState(state, emptyColor);
         if (state == CellState.Soldier) FaceNeighbors(pos);
+
+        RefreshClue(rowClueLabels, pos.Row, Board.CountSoldiersInRow(pos.Row), Board.RowClues);
+        RefreshClue(colClueLabels, pos.Col, Board.CountSoldiersInCol(pos.Col), Board.ColClues);
+        RefreshTouching(pos);
+        foreach (GridPos n in Board.InsideNeighbors8(pos)) RefreshTouching(n);
     }
 
     // ---------- Posição ----------
@@ -132,7 +156,93 @@ public class GridView : MonoBehaviour {
         foreach (GridPos p in result.UnsatisfiedMonsters) Flash(p);
         foreach (GridPos p in result.TouchingSoldiers) Flash(p);
         foreach (GridPos p in result.UnpairedSoldiers) Flash(p);
-        // TODO Fase 2: destacar as pistas (WrongRows / WrongCols) quando elas forem exibidas.
+
+        if (rowClueLabels == null) return;
+        foreach (int row in result.WrongRows) FlashClue(rowClueLabels, row, Board.CountSoldiersInRow(row), Board.RowClues);
+        foreach (int col in result.WrongCols) FlashClue(colClueLabels, col, Board.CountSoldiersInCol(col), Board.ColClues);
+    }
+
+    // ---------- Pistas e contorno ----------
+
+    /// <summary>Pistas das linhas à esquerda (coluna -1) e das colunas em cima (linha Rows).</summary>
+    private void CreateClueLabels(float delay) {
+        rowClueLabels = new TextMeshPro[Board.Rows];
+        colClueLabels = new TextMeshPro[Board.Cols];
+        for (int row = 0; row < Board.Rows; row++) {
+            rowClueLabels[row] = CreateClueLabel($"Row Clue {row}", new GridPos(row, -1), Board.RowClues[row], delay);
+        }
+        for (int col = 0; col < Board.Cols; col++) {
+            colClueLabels[col] = CreateClueLabel($"Col Clue {col}", new GridPos(Board.Rows, col), Board.ColClues[col], delay);
+        }
+    }
+
+    private TextMeshPro CreateClueLabel(string labelName, GridPos pos, int value, float delay) {
+        var go = new GameObject(labelName);
+        go.transform.SetParent(gridParent, false);
+        go.transform.position = CellToWorld(pos);
+
+        TextMeshPro label = go.AddComponent<TextMeshPro>();
+        label.text = value.ToString();
+        label.alignment = TextAlignmentOptions.Center;
+        label.fontStyle = FontStyles.Bold;
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 1f;
+        label.fontSizeMax = 20f;
+        label.rectTransform.sizeDelta = new Vector2(cellSize, cellSize) / Mathf.Max(0.0001f, gridParent.lossyScale.x);
+        label.sortingLayerID = cells[0, 0].SortingLayerID;
+        label.sortingOrder = clueSortingOrder;
+
+        go.transform.localScale = new Vector3(0, 0, 1);
+        go.transform.DOScale(1f, 0.2f).SetDelay(delay).SetLink(go);
+        return label;
+    }
+
+    private void RefreshAllFeedback() {
+        if (rowClueLabels != null) {
+            for (int row = 0; row < Board.Rows; row++) RefreshClue(rowClueLabels, row, Board.CountSoldiersInRow(row), Board.RowClues);
+            for (int col = 0; col < Board.Cols; col++) RefreshClue(colClueLabels, col, Board.CountSoldiersInCol(col), Board.ColClues);
+        }
+        for (int row = 0; row < Board.Rows; row++) {
+            for (int col = 0; col < Board.Cols; col++) RefreshTouching(new GridPos(row, col));
+        }
+    }
+
+    /// <summary>Cor da pista: normal, apagada quando bate, vermelha quando passa.</summary>
+    private Color ClueColor(int count, int clue) {
+        if (count > clue) return clueOverColor;
+        return count == clue ? clueDoneColor : clueColor;
+    }
+
+    private void RefreshClue(TextMeshPro[] labels, int index, int count, IReadOnlyList<int> clues) {
+        if (labels == null) return;
+        TextMeshPro label = labels[index];
+        DOTween.Kill(label);
+        label.color = ClueColor(count, clues[index]);
+    }
+
+    private void FlashClue(TextMeshPro[] labels, int index, int count, IReadOnlyList<int> clues) {
+        TextMeshPro label = labels[index];
+        Color rest = ClueColor(count, clues[index]);
+        DOTween.Kill(label);
+        DOTween.To(() => label.color, c => label.color = c, clueFlashColor, 0.3f)
+            .SetLoops(2, LoopType.Yoyo)
+            .SetTarget(label)
+            .SetLink(label.gameObject)
+            .OnComplete(() => label.color = rest);
+    }
+
+    /// <summary>Regra 3 ao vivo: soldado encostado em outro soldado ganha contorno vermelho.</summary>
+    private void RefreshTouching(GridPos pos) {
+        bool touching = false;
+        if (Board.GetState(pos) == CellState.Soldier) {
+            foreach (GridPos n in Board.InsideNeighbors8(pos)) {
+                if (!Board.IsMonster(n) && Board.GetState(n) == CellState.Soldier) {
+                    touching = true;
+                    break;
+                }
+            }
+        }
+        cells[pos.Row, pos.Col].SetOutline(touching);
     }
 
     // ---------- Animações ----------

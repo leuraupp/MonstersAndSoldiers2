@@ -39,6 +39,7 @@ public static class Phase3UISetup {
             Capture(MatchScenePath, "Logs/Phase3/match_pause.png", "PauseMenu/Panel");
             Capture(MatchScenePath, "Logs/Phase3/match_victory.png", "VictoryScreen/Panel");
             Capture(MatchScenePath, "Logs/Phase3/match_options.png", "OptionsPanel/Panel");
+            Capture(MatchScenePath, "Logs/Phase3/match_hint.png", "TutorialHint/Balloon");
             Capture(MenuScenePath, "Logs/Phase3/menu_main.png");
             Capture(MenuScenePath, "Logs/Phase3/menu_modes.png", "ModeSelect", "!MainButtons");
             Capture(MenuScenePath, "Logs/Phase3/menu_credits.png", "Credits", "!MainButtons");
@@ -74,6 +75,28 @@ public static class Phase3UISetup {
         so.FindProperty("timerText").objectReferenceValue = timer;
         so.FindProperty("pauseButton").objectReferenceValue = pause;
         so.ApplyModifiedPropertiesWithoutUndo();
+
+        // Balão do tutorial (GDD 6.1), à esquerda entre o tempo e o contador de soldados.
+        Transform hintRoot = Recreate(root, "TutorialHint");
+        Stretch((RectTransform)hintRoot);
+        var hint = hintRoot.gameObject.AddComponent<TutorialHint>();
+        RectTransform balloon = Panel(hintRoot, "Balloon", new Vector2(600, 460));
+        Place(balloon, new Vector2(0, 0.5f), new Vector2(24, 70), null);
+        Text(balloon, "Title", "Nova regra", 40, TextAlignmentOptions.Top, Gold, TitleFontPath)
+            .rectTransform.Let(r => Place(r, new Vector2(0.5f, 1), new Vector2(0, -26), new Vector2(500, 56)));
+        TextMeshProUGUI hintText = Text(balloon, "Text", "A vila está cercada! Cada Slime precisa de 1 soldado numa das 8 casas ao redor.\n" +
+            "Soldados não podem se encostar, nem na diagonal. Clique numa casa para pôr um soldado.", 30, TextAlignmentOptions.TopLeft, Ink);
+        hintText.textWrappingMode = TextWrappingModes.Normal;
+        hintText.lineSpacing = 10;
+        hintText.enableAutoSizing = true;
+        hintText.fontSizeMin = 18;
+        hintText.fontSizeMax = 28;
+        hintText.rectTransform.anchorMin = Vector2.zero;
+        hintText.rectTransform.anchorMax = Vector2.one;
+        hintText.rectTransform.offsetMin = new Vector2(52, 104);  // acima do botão
+        hintText.rectTransform.offsetMax = new Vector2(-52, -84); // abaixo da faixa do título do painel
+        Button hintOk = TextButton(balloon, "Ok", "Entendi", -350);
+        Link(hint, ("balloon", balloon.gameObject), ("text", hintText), ("closeButton", hintOk));
 
         OptionsPanel options = BuildOptions(root);
 

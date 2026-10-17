@@ -57,7 +57,7 @@ public class GameplaySmokeTests {
         GridController grid = GridController.Instance;
         LevelData firstLevel = grid.CurrentLevel;
         BoardModel board = grid.Board;
-        Assert.AreEqual(4, board.RequiredSoldierTotal);
+        Assert.IsNotEmpty(firstLevel.solution, "O primeiro nível precisa de solução salva.");
 
         // Ataque errado: tabuleiro vazio continua no mesmo nível.
         GameManager.Instance.OnAttackButtonPressed();
@@ -70,9 +70,9 @@ public class GameplaySmokeTests {
         Assert.AreEqual(1, GameManager.Instance.AttackAttempts);
         Assert.AreSame(firstLevel, grid.CurrentLevel);
 
-        // Solução do Level_01 (4 slimes).
-        foreach (GridPos p in new[] { new GridPos(0, 1), new GridPos(0, 3), new GridPos(2, 0), new GridPos(2, 2) }) {
-            Assert.IsTrue(board.SetState(p, CellState.Soldier));
+        // Solução salva do primeiro nível do tutorial.
+        foreach (Vector2Int s in firstLevel.solution) {
+            Assert.IsTrue(board.SetState(new GridPos(s.x, s.y), CellState.Soldier));
         }
         Assert.IsTrue(RuleValidator.Validate(board).IsValid);
 
@@ -94,7 +94,7 @@ public class GameplaySmokeTests {
         Assert.AreNotSame(firstLevel, grid.CurrentLevel);
         Assert.AreEqual(0, grid.Board.SoldierCount);
 
-        // Nível 2 tem Goblins, que não têm controller de ataque: o ataque precisa terminar sem erro.
+        // Ataque errado no nível 2 também termina sem erro.
         GameManager.Instance.OnAttackButtonPressed();
         Assert.IsTrue(GameManager.Instance.IsAnimating);
         deadline = Time.realtimeSinceStartup + Timeout;
@@ -254,6 +254,52 @@ public class GameplaySmokeTests {
         yield return new ExitPlayMode();
     }
 
+    [UnityTest]
+    public IEnumerator Menu_ModeSelect_StartsMatch_ThenBackToMenu() {
+        yield return new EnterPlayMode();
+
+        EditorSceneManager.LoadSceneInPlayMode("Assets/Scenes/MainMenu/MainMenu.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        float deadline = Time.realtimeSinceStartup + Timeout;
+        MainMenuController menu = null;
+        while (menu == null) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "O menu não carregou.");
+            yield return null;
+            menu = Object.FindAnyObjectByType<MainMenuController>();
+        }
+        yield return null; // Start do menu liga os botões
+
+        // Jogar abre a seleção de modo; Médio carrega a partida no modo procedural.
+        GameObject modes = GameObject.Find("ModeSelect");
+        Assert.IsNull(modes, "A seleção de modo deveria começar fechada.");
+        menu.OpenModeSelect();
+        modes = GameObject.Find("ModeSelect");
+        Assert.IsNotNull(modes);
+        modes.transform.Find("Panel/Medium").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (GridController.Instance == null || GridController.Instance.Board == null) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "A partida não carregou.");
+            yield return null;
+        }
+        Assert.AreEqual(LevelManager.LevelMode.Procedural, LevelManager.Instance.Mode);
+        Assert.AreEqual(Difficulty.Medium, LevelManager.Instance.CurrentDifficulty);
+        Assert.AreEqual(6, GridController.Instance.Board.Rows);
+        Assert.AreEqual(8, GridController.Instance.Board.Cols);
+        Assert.AreNotEqual(0, LevelManager.Instance.CurrentSeed);
+
+        // Pausa > Menu volta ao menu principal com o tempo normal.
+        GameManager.Instance.Pause();
+        Object.FindAnyObjectByType<PauseMenu>().GoToMenu();
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (Object.FindAnyObjectByType<MainMenuController>() == null) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "Não voltou ao menu.");
+            yield return null;
+        }
+        Assert.AreEqual(1f, Time.timeScale);
+
+        yield return new ExitPlayMode();
+    }
+
     private static GridPos FirstFreeCell(BoardModel board) {
         for (int r = 0; r < board.Rows; r++) {
             for (int c = 0; c < board.Cols; c++) {
@@ -293,7 +339,7 @@ public class GameplaySmokeTests {
 
             GridView view = GridController.Instance.CurrentGrid;
             BoardModel board = view.Board;
-            var target = new GridPos(0, 1);
+            GridPos target = FirstFreeCell(board);
             Vector2 screen = Camera.main.WorldToScreenPoint(view.CellToWorld(target));
 
             // Clique esquerdo: Vazia -> Soldado.

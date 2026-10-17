@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c20713abfbd794e4aa32e0b6aefc5fed, type: 3}
+  m_Name: T1
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  levelName: Tutorial 1
+  levelID: 1
+  rows: 4
+  columns: 4
+  monsterPlacements:
+  - monsterType: 0
+    gridPosition: {x: 0, y: 1}
+  - monsterType: 0
+    gridPosition: {x: 2, y: 1}
+  - monsterType: 0
+    gridPosition: {x: 3, y: 3}
+  rowClues: 
+  columnClues: 
+  tutorialHint: "A vila est\xE1 cercada! Cada Slime precisa de 1 soldado numa das
+    8 casas ao redor.\nSoldados n\xE3o podem se encostar, nem na diagonal. Clique
+    numa casa para p\xF4r um soldado."
+  solution:
+  - {x: 1, y: 2}
+  - {x: 3, y: 2}
+  - {x: 2, y: 0}
+  backgroundSprite: {fileID: 0}
+  backgroundColor: {r: 1, g: 1, b: 1, a: 1}

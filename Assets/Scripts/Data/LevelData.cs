@@ -26,6 +26,13 @@ public class LevelData : ScriptableObject {
     [Tooltip("Soldados por coluna, da coluna 0 (esquerda) para a direita")]
     public int[] columnClues = new int[0];
 
+    [Header("Tutorial (GDD 6.1)")]
+    [Tooltip("Balão com a regra nova, mostrado quando o nível começa. Vazio = sem balão.")]
+    [TextArea(2, 5)] public string tutorialHint;
+
+    [Tooltip("Uma solução conhecida (x = linha, y = coluna). Usada pelos testes; vazio nos níveis antigos.")]
+    public List<Vector2Int> solution = new List<Vector2Int>();
+
     [Header("Visuals")]
     public Sprite backgroundSprite;
     public Color backgroundColor = Color.white;

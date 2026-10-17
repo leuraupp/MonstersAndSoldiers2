@@ -44,8 +44,8 @@ public static class Phase3UISetup {
             Capture(MatchScenePath, "Logs/Phase3/match_options.png", "OptionsPanel/Panel");
             Capture(MatchScenePath, "Logs/Phase3/match_hint.png", "TutorialHint/Balloon");
             Capture(MenuScenePath, "Logs/Phase3/menu_main.png");
-            Capture(MenuScenePath, "Logs/Phase3/menu_modes.png", "ModeSelect", "!MainButtons");
-            Capture(MenuScenePath, "Logs/Phase3/menu_credits.png", "Credits", "!MainButtons");
+            Capture(MenuScenePath, "Logs/Phase3/menu_modes.png", "ModeSelect", "!StartGame", "!Options", "!Credits", "!Exit");
+            Capture(MenuScenePath, "Logs/Phase3/menu_credits.png", "CreditsPanel", "!StartGame", "!Options", "!Credits", "!Exit");
             EditorApplication.Exit(0);
         } catch (System.Exception e) {
             Debug.LogException(e);
@@ -152,34 +152,25 @@ public static class Phase3UISetup {
         Canvas canvas = RootCanvas(scene);
         Transform root = canvas.transform;
 
-        // Os botões originais (Jogar, Sair) passam a morar num grupo que some quando outro painel abre.
-        Transform main = root.Find("MainButtons");
-        if (main == null) {
-            main = new GameObject("MainButtons", typeof(RectTransform)).transform;
-            main.SetParent(root, false);
-            Stretch((RectTransform)main);
-            foreach (string name in new[] { "StartGame", "Exit" }) {
-                Transform b = root.Find(name);
-                if (b != null) b.SetParent(main, true);
-            }
-        }
-        Transform play = main.Find("StartGame");
-        Transform exit = main.Find("Exit");
+        // Opções e Créditos ficam soltos no Canvas, ao lado de Jogar e Sair: a arte, a posição, o efeito
+        // e a animação de entrada vêm do GeneratedMenuSetup (Tools > Art), que roda logo abaixo.
+        Transform play = root.Find("StartGame");
+        Transform exit = root.Find("Exit");
+        if (root.Find("Options") == null) MenuArtButton(root, "Options", "MenuButton_Opcoes").transform.SetSiblingIndex(play.GetSiblingIndex() + 1);
+        if (root.Find("Credits") == null) MenuArtButton(root, "Credits", "MenuButton_Creditos").transform.SetSiblingIndex(play.GetSiblingIndex() + 2);
+        Debug.Log(GeneratedMenuSetup.Apply());
+        root = RootCanvas(scene).transform;
+        play = root.Find("StartGame");
+        exit = root.Find("Exit");
+        Button optionsButton = root.Find("Options").GetComponent<Button>();
+        Button creditsButton = root.Find("Credits").GetComponent<Button>();
 
         // Jogar agora abre a seleção de modo em vez de carregar a cena direto.
         Button playButton = play.GetComponent<Button>();
         for (int i = playButton.onClick.GetPersistentEventCount() - 1; i >= 0; i--) {
             UnityEventTools.RemovePersistentListener(playButton.onClick, i);
         }
-
-        // Opções e Créditos entre Jogar e Sair (mesma arte dos botões existentes).
-        Button optionsButton = MenuArtButton(main, "Options", "Button_Opcoes");
-        Button creditsButton = MenuArtButton(main, "Credits", "Button_Creditos");
-        float y = ((RectTransform)play).anchoredPosition.y;
-        ((RectTransform)optionsButton.transform).anchoredPosition = new Vector2(0, y - 110);
-        ((RectTransform)creditsButton.transform).anchoredPosition = new Vector2(0, y - 220);
-        ((RectTransform)exit).anchoredPosition = new Vector2(0, y - 330);
-        exit.SetAsLastSibling();
+        GameObject[] mainButtons = { play.gameObject, optionsButton.gameObject, creditsButton.gameObject, exit.gameObject };
 
         // Seleção de modo (GDD 8.2).
         Transform modes = Recreate(root, "ModeSelect");
@@ -195,7 +186,7 @@ public static class Phase3UISetup {
         Button back = TextButton(modePanel, "Back", "Voltar", -560);
 
         // Créditos (GDD 8.1; a lista de assets entra na Fase 4).
-        Transform credits = Recreate(root, "Credits");
+        Transform credits = Recreate(root, "CreditsPanel"); // "Credits" é o botão
         Stretch((RectTransform)credits);
         RectTransform creditsPanel = Panel(credits, "Panel", new Vector2(900, 640));
         creditsPanel.anchoredPosition = new Vector2(0, -210);
@@ -215,7 +206,12 @@ public static class Phase3UISetup {
         var controllerGo = new GameObject("MainMenuController");
         controllerGo.transform.SetParent(root, false);
         var controller = controllerGo.AddComponent<MainMenuController>();
-        Link(controller, ("mainButtons", main.gameObject), ("playButton", playButton), ("optionsButton", optionsButton),
+        var controllerSo = new SerializedObject(controller);
+        SerializedProperty mainList = controllerSo.FindProperty("mainButtons");
+        mainList.arraySize = mainButtons.Length;
+        for (int i = 0; i < mainButtons.Length; i++) mainList.GetArrayElementAtIndex(i).objectReferenceValue = mainButtons[i];
+        controllerSo.ApplyModifiedPropertiesWithoutUndo();
+        Link(controller, ("playButton", playButton), ("optionsButton", optionsButton),
              ("creditsButton", creditsButton), ("exitButton", exit.GetComponent<Button>()),
              ("modePanel", modes.gameObject), ("tutorialButton", tutorial), ("easyButton", easy),
              ("mediumButton", medium), ("hardButton", hard), ("modeBackButton", back),

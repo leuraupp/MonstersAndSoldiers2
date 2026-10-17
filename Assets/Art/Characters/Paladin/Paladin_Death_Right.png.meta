@@ -259,6 +259,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Paladin_Death_Right_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25deb96c38fac78468a7832883bf7f65
+      internalID: -764323377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -279,6 +301,7 @@ TextureImporter:
       Paladin_Death_Right_3: 318502397068102105
       Paladin_Death_Right_4: -4813118456516309817
       Paladin_Death_Right_5: -9064933061511935252
+      Paladin_Death_Right_6: -764323377
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

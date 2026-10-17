@@ -11,7 +11,8 @@ using UnityEngine.UI;
 /// </summary>
 public class MainMenuController : MonoBehaviour {
     [Header("Menu principal")]
-    [SerializeField] private GameObject mainButtons;
+    [Tooltip("Jogar, Opções, Créditos e Sair: somem quando outro painel abre.")]
+    [SerializeField] private GameObject[] mainButtons;
     [SerializeField] private Button playButton;
     [SerializeField] private Button optionsButton;
     [SerializeField] private Button creditsButton;
@@ -53,7 +54,7 @@ public class MainMenuController : MonoBehaviour {
     public void ShowMain() {
         modePanel.SetActive(false);
         if (creditsPanel != null) creditsPanel.SetActive(false);
-        mainButtons.SetActive(true);
+        SetMainButtons(true);
         Select(playButton);
     }
 
@@ -64,20 +65,20 @@ public class MainMenuController : MonoBehaviour {
         SetBestLabel(mediumButton, best.Get(BestTimes.KeyFor(Difficulty.Medium)));
         SetBestLabel(hardButton, best.Get(BestTimes.KeyFor(Difficulty.Hard)));
 
-        mainButtons.SetActive(false);
+        SetMainButtons(false);
         modePanel.SetActive(true);
         Select(easyButton);
     }
 
     public void OpenOptions() {
         if (optionsPanel == null) return;
-        mainButtons.SetActive(false);
-        optionsPanel.Open(() => { mainButtons.SetActive(true); Select(optionsButton); });
+        SetMainButtons(false);
+        optionsPanel.Open(() => { SetMainButtons(true); Select(optionsButton); });
     }
 
     public void OpenCredits() {
         if (creditsPanel == null) return;
-        mainButtons.SetActive(false);
+        SetMainButtons(false);
         creditsPanel.SetActive(true);
         Select(creditsBackButton);
     }
@@ -94,6 +95,14 @@ public class MainMenuController : MonoBehaviour {
         Transform t = button.transform.Find("Best");
         if (t == null || !t.TryGetComponent(out TMP_Text text)) return;
         text.text = seconds.HasValue ? $"Recorde {MatchSession.FormatTime(seconds.Value)}" : "";
+    }
+
+    private void SetMainButtons(bool visible) {
+        foreach (GameObject button in mainButtons) {
+            if (button != null) button.SetActive(visible);
+        }
+        // O Sair continua escondido no navegador.
+        if (visible && exitButton != null && Application.platform == RuntimePlatform.WebGLPlayer) exitButton.gameObject.SetActive(false);
     }
 
     private static void Select(Selectable selectable) {

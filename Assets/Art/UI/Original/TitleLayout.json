@@ -1,0 +1,120 @@
+{
+  "width": 480,
+  "height": 270,
+  "pad": 8,
+  "flags": [
+    {
+      "x": 68,
+      "y": 114
+    },
+    {
+      "x": 100,
+      "y": 108
+    },
+    {
+      "x": 84,
+      "y": 121
+    }
+  ],
+  "twinkles": [
+    {
+      "x": 52,
+      "y": 22
+    },
+    {
+      "x": 118,
+      "y": 64
+    },
+    {
+      "x": 176,
+      "y": 18
+    },
+    {
+      "x": 232,
+      "y": 88
+    },
+    {
+      "x": 300,
+      "y": 30
+    },
+    {
+      "x": 452,
+      "y": 92
+    },
+    {
+      "x": 430,
+      "y": 18
+    },
+    {
+      "x": 20,
+      "y": 96
+    },
+    {
+      "x": 268,
+      "y": 120
+    }
+  ],
+  "clouds": [
+    {
+      "sprite": "Title_Cloud_0",
+      "x": 330,
+      "y": 58,
+      "speed": 3.0
+    },
+    {
+      "sprite": "Title_Cloud_1",
+      "x": 120,
+      "y": 36,
+      "speed": 4.5
+    },
+    {
+      "sprite": "Title_Cloud_1",
+      "x": 470,
+      "y": 110,
+      "speed": 2.2
+    }
+  ],
+  "actors": [
+    {
+      "name": "Paladin",
+      "sheet": "Characters/Paladin/Paladin_Idle_Right",
+      "x": 150,
+      "feetY": 246,
+      "startFrame": 0
+    },
+    {
+      "name": "Paladin2",
+      "sheet": "Characters/Paladin/Paladin_Idle_Right",
+      "x": 186,
+      "feetY": 247,
+      "startFrame": 2
+    },
+    {
+      "name": "Slime",
+      "sheet": "Characters/Slime/Slime_Idle_Left",
+      "x": 290,
+      "feetY": 240,
+      "startFrame": 1
+    },
+    {
+      "name": "Goblin",
+      "sheet": "Characters/Goblin/Goblin_Idle_Left",
+      "x": 326,
+      "feetY": 239,
+      "startFrame": 3
+    },
+    {
+      "name": "Orc",
+      "sheet": "Characters/Orc/Orc_Idle_Left",
+      "x": 364,
+      "feetY": 246,
+      "startFrame": 0
+    }
+  ],
+  "fireflyArea": {
+    "x": 0,
+    "y": 196,
+    "w": 480,
+    "h": 60
+  }
+}

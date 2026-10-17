@@ -259,6 +259,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Goblin_Death_Left_6
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 637839edbcbf07e4dbc2c1e6023290a1
+      internalID: 1740766588
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -279,6 +301,7 @@ TextureImporter:
       Goblin_Death_Left_3: 5713681803641343896
       Goblin_Death_Left_4: 2307956414176169220
       Goblin_Death_Left_5: 1699476731136124942
+      Goblin_Death_Left_6: 1740766588
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

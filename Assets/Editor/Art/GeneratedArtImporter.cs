@@ -27,6 +27,12 @@ public class GeneratedArtImporter : AssetPostprocessor {
         { "Button_Atacar", (72, 20, Vector4.zero) },
         { "Button_Pausa", (72, 20, Vector4.zero) },
         { "Button_Pause_Icon", (20, 20, Vector4.zero) },
+        { "MenuButton_Jogar", (96, 24, Vector4.zero) },
+        { "MenuButton_Opcoes", (96, 24, Vector4.zero) },
+        { "MenuButton_Creditos", (96, 24, Vector4.zero) },
+        { "MenuButton_Sair", (96, 24, Vector4.zero) },
+        { "Title_Flag", (8, 5, Vector4.zero) },
+        { "Title_Twinkle", (7, 7, Vector4.zero) },
     };
     private static readonly Dictionary<string, Vector4> SingleBorders = new() {
         { "Panel", new Vector4(8, 8, 8, 8) },

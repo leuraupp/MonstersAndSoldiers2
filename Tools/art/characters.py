@@ -31,7 +31,7 @@ def eyes_front(cv, cx, y, pose, iris, gap=2, wide=1):
             cv.set(x - 1, y - 1, blk); cv.set(x + 1, y + 1, blk)
             cv.set(x + 1, y - 1, blk); cv.set(x - 1, y + 1, blk); cv.set(x, y, blk)
         return
-    if pose.face == "pain":
+    if pose.face in ("pain", "blink"):
         for x in (cx - gap - 1, cx + gap):
             cv.set(x - 1, y, blk); cv.set(x, y, blk)
         return
@@ -50,7 +50,7 @@ def eye_side(cv, x, y, pose, iris):
         cv.set(x - 1, y - 1, blk); cv.set(x + 1, y + 1, blk)
         cv.set(x + 1, y - 1, blk); cv.set(x - 1, y + 1, blk); cv.set(x, y, blk)
         return
-    if pose.face == "pain":
+    if pose.face in ("pain", "blink"):
         cv.set(x - 1, y, blk); cv.set(x, y, blk)
         return
     cv.set(x, y - 1, color(iris)); cv.set(x, y, blk)
@@ -306,9 +306,9 @@ def orc_club(cv, hx, hy, ux, uy, facing, spec):
 
 ORC = Spec(
     name="Orc", skin="orc", leg_h=5, leg_w=4, torso_w=14, torso_h=9,
-    head_w=10, head_h=8, arm_len=6, arm_w=3, pants="stone", torso_ramp="orc",
+    head_w=10, head_h=8, arm_len=6, arm_w=3, pants="purple", torso_ramp="orc",
     draw_head=orc_head, draw_torso=orc_torso, draw_weapon=orc_club,
-    weapon_len=10, boots="stone")
+    weapon_len=10, boots="leather")
 
 
 ALL = {"Paladin": PALADIN, "Goblin": GOBLIN, "Orc": ORC}

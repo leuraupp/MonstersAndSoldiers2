@@ -19,6 +19,29 @@ public class GameplaySmokeTests {
     // Folgado de propósito: com o Editor em segundo plano a Unity reduz o frame rate e tudo fica mais lento.
     private const float Timeout = 30f;
 
+    // Vencer grava recordes no PlayerPrefs do Editor; os testes devolvem os valores do jogador.
+    private static readonly string[] RecordKeys = { "best.Tutorial", "best.Easy", "best.Medium", "best.Hard" };
+    private readonly System.Collections.Generic.Dictionary<string, string> savedRecords =
+        new System.Collections.Generic.Dictionary<string, string>();
+
+    [SetUp]
+    public void SaveRecords() {
+        savedRecords.Clear();
+        foreach (string key in RecordKeys) {
+            if (PlayerPrefs.HasKey(key)) savedRecords[key] = PlayerPrefs.GetString(key);
+        }
+    }
+
+    [TearDown]
+    public void RestoreRecords() {
+        foreach (string key in RecordKeys) {
+            if (savedRecords.TryGetValue(key, out string value)) PlayerPrefs.SetString(key, value);
+            else PlayerPrefs.DeleteKey(key);
+        }
+        PlayerPrefs.Save();
+        Time.timeScale = 1f;
+    }
+
     [UnityTest]
     public IEnumerator WrongAttack_ThenSolve_AdvancesToNextLevel() {
         yield return new EnterPlayMode();
@@ -55,6 +78,14 @@ public class GameplaySmokeTests {
 
         GameManager.Instance.OnAttackButtonPressed();
         Assert.AreEqual(2, GameManager.Instance.AttackAttempts, "O segundo ataque não começou.");
+        VictoryScreen victory = Object.FindAnyObjectByType<VictoryScreen>(FindObjectsInactive.Include);
+        Assert.IsNotNull(victory, "A cena não tem tela de vitória.");
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (!victory.IsOpen) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "A tela de vitória não abriu.");
+            yield return null;
+        }
+        ContinueFromVictory(victory, 2);
         deadline = Time.realtimeSinceStartup + Timeout;
         while (grid.CurrentLevel == firstLevel || grid.IsTransitioning) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "Não avançou para o próximo nível.");
@@ -143,6 +174,14 @@ public class GameplaySmokeTests {
         // Solução certa: avança para um novo mapa (nova seed) na mesma dificuldade.
         foreach (GridPos p in puzzle.Solution) Assert.IsTrue(board.SetState(p, CellState.Soldier));
         GameManager.Instance.OnAttackButtonPressed();
+        VictoryScreen victory = Object.FindAnyObjectByType<VictoryScreen>(FindObjectsInactive.Include);
+        Assert.IsNotNull(victory, "A cena não tem tela de vitória.");
+        deadline = Time.realtimeSinceStartup + Timeout;
+        while (!victory.IsOpen) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "A tela de vitória não abriu.");
+            yield return null;
+        }
+        ContinueFromVictory(victory, 1);
         deadline = Time.realtimeSinceStartup + Timeout;
         while (grid.Board == board || grid.IsTransitioning) {
             Assert.Less(Time.realtimeSinceStartup, deadline, "Não avançou para o próximo mapa.");
@@ -154,6 +193,74 @@ public class GameplaySmokeTests {
         Assert.AreEqual(0, grid.Board.SoldierCount);
 
         yield return new ExitPlayMode();
+    }
+
+    /// <summary>Confere a tela de vitória aberta e aperta Próximo mapa.</summary>
+    private static void ContinueFromVictory(VictoryScreen victory, int attempts) {
+        Assert.AreEqual(MatchState.Won, GameManager.Instance.Session.State);
+        Assert.AreEqual(attempts, GameManager.Instance.AttackAttempts);
+        Assert.IsFalse(GameManager.Instance.Session.Pause(), "Não dá para pausar com a vitória aberta.");
+        victory.Next();
+        Assert.IsFalse(victory.IsOpen);
+    }
+
+    [UnityTest]
+    public IEnumerator Pause_StopsClockAndInput_ThenRestartKeepsSeed() {
+        yield return new EnterPlayMode();
+
+        EditorSceneManager.LoadSceneInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
+        float deadline = Time.realtimeSinceStartup + Timeout;
+        while (GridController.Instance == null || GridController.Instance.Board == null) {
+            Assert.Less(Time.realtimeSinceStartup, deadline, "Cena não carregou o tabuleiro.");
+            yield return null;
+        }
+
+        LevelManager.Instance.StartProcedural(Difficulty.Easy, 4242);
+        yield return null;
+        GameManager game = GameManager.Instance;
+        BoardModel board = GridController.Instance.Board;
+        board.SetState(FirstFreeCell(board), CellState.Soldier);
+
+        // Deixa o relógio andar um pouco.
+        deadline = Time.realtimeSinceStartup + 0.3f;
+        while (Time.realtimeSinceStartup < deadline) yield return null;
+        Assert.Greater(game.Session.ElapsedSeconds, 0);
+
+        PauseMenu pause = Object.FindAnyObjectByType<PauseMenu>();
+        Assert.IsNotNull(pause, "A cena não tem menu de pausa.");
+        game.TogglePause();
+        yield return null;
+        Assert.AreEqual(MatchState.Paused, game.Session.State);
+        Assert.AreEqual(0f, Time.timeScale);
+        Assert.IsFalse(Object.FindAnyObjectByType<InputController>().BoardInputEnabled);
+        Assert.IsTrue(pause.transform.Find("Panel").gameObject.activeSelf, "O painel de pausa não abriu.");
+
+        double frozen = game.Session.ElapsedSeconds;
+        deadline = Time.realtimeSinceStartup + 0.3f;
+        while (Time.realtimeSinceStartup < deadline) yield return null;
+        Assert.AreEqual(frozen, game.Session.ElapsedSeconds, "O tempo andou durante a pausa.");
+
+        // Reiniciar: despausa, mesmo mapa e seed, tabuleiro e tempo zerados.
+        pause.Restart();
+        yield return null;
+        Assert.AreEqual(MatchState.Playing, game.Session.State);
+        Assert.AreEqual(1f, Time.timeScale);
+        Assert.IsFalse(pause.transform.Find("Panel").gameObject.activeSelf);
+        Assert.AreEqual(4242, LevelManager.Instance.CurrentSeed);
+        Assert.AreNotSame(board, GridController.Instance.Board);
+        Assert.AreEqual(0, GridController.Instance.Board.SoldierCount);
+        Assert.Less(game.Session.ElapsedSeconds, 0.5);
+
+        yield return new ExitPlayMode();
+    }
+
+    private static GridPos FirstFreeCell(BoardModel board) {
+        for (int r = 0; r < board.Rows; r++) {
+            for (int c = 0; c < board.Cols; c++) {
+                if (!board.IsMonster(new GridPos(r, c))) return new GridPos(r, c);
+            }
+        }
+        throw new AssertionException("Tabuleiro sem casa livre.");
     }
 
     private static int CountVisibleOutlines(GridView view) {

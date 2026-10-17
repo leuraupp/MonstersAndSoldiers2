@@ -27,6 +27,13 @@ public class LevelManager : MonoBehaviour {
     public LevelMode Mode => mode;
     public Difficulty CurrentDifficulty => difficulty;
 
+    /// <summary>Número (a partir de 1) do nível feito à mão em jogo.</summary>
+    public int CurrentLevelNumber => currentLevelIndex + 1;
+    public int LevelCount => allLevels != null ? allLevels.Length : 0;
+
+    /// <summary>True no último nível do tutorial: o próximo passo é o modo Fácil.</summary>
+    public bool IsLastHandMadeLevel => mode == LevelMode.HandMade && currentLevelIndex >= LevelCount - 1;
+
     /// <summary>Mapa procedural em jogo. Null nos níveis feitos à mão.</summary>
     public GeneratedPuzzle CurrentPuzzle { get; private set; }
 
@@ -47,6 +54,14 @@ public class LevelManager : MonoBehaviour {
 
     private void Start() {
         if (GridController.Instance == null) return;
+
+        // Pedido vindo do menu (GDD 8.2) tem prioridade sobre o modo configurado na cena.
+        if (MatchRequest.TryConsume(out bool tutorial, out Difficulty requested)) {
+            mode = tutorial ? LevelMode.HandMade : LevelMode.Procedural;
+            difficulty = requested;
+            startSeed = 0;
+            currentLevelIndex = 0;
+        }
 
         if (mode == LevelMode.Procedural) {
             StartProcedural(difficulty, startSeed != 0 ? startSeed : NewSeed());
@@ -84,6 +99,15 @@ public class LevelManager : MonoBehaviour {
         LoadLevel(sceneIndex);
     }
 
+    // Índices do Build Profile: 0 = MainMenu, 1 = partida.
+    public const int MainMenuScene = 0;
+    public const int MatchScene = 1;
+
+    public void LoadMainMenu() {
+        Time.timeScale = 1f;
+        LoadLevel(MainMenuScene);
+    }
+
     /// <summary>Próximo nível; no modo procedural, novo mapa com nova seed na mesma dificuldade.</summary>
     public void LoadNextGrid() {
         if (mode == LevelMode.Procedural) {
@@ -92,7 +116,15 @@ public class LevelManager : MonoBehaviour {
             return;
         }
 
-        currentLevelIndex = (currentLevelIndex + 1) % allLevels.Length;
+        // Fim do tutorial: segue para o modo Fácil.
+        if (IsLastHandMadeLevel) {
+            mode = LevelMode.Procedural;
+            difficulty = Difficulty.Easy;
+            LoadNextGrid();
+            return;
+        }
+
+        currentLevelIndex++;
         GridController.Instance.TransitionToNextGrid(GetCurrentLevel());
     }
 

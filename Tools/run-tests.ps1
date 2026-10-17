@@ -86,7 +86,8 @@ if (-not $UnityExe) {
     if (-not $UnityExe) { throw "Unity $version não encontrado. Use -UnityExe <caminho>." }
 }
 
-$outDir = Join-Path $projectDir "Temp\TestOutput"
+# Fora de Temp: o Editor apaga Temp ao sair do batchmode e leva o XML junto.
+$outDir = Join-Path $projectDir "Logs\TestOutput"
 New-Item -ItemType Directory -Force $outDir | Out-Null
 $results = Join-Path $outDir "editmode-results.xml"
 $log = Join-Path $outDir "unity-tests.log"

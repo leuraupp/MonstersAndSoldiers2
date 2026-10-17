@@ -132,7 +132,13 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(successDelay);
         Debug.Log($"Nível concluído em {MatchSession.FormatTime(Session.ElapsedSeconds)}, " +
                   $"{AttackAttempts} tentativa(s){(LastWinWasRecord ? ", recorde" : "")}.");
-        LevelManager.Instance.LoadNextGrid();
+        // Sem tela de vitória na cena (cenas de teste antigas), segue direto para o próximo mapa.
+        VictoryScreen victory = FindAnyObjectByType<VictoryScreen>(FindObjectsInactive.Include);
+        if (victory != null) {
+            victory.Show();
+        } else {
+            LevelManager.Instance.LoadNextGrid();
+        }
     }
 
     private void SetInputEnabled(bool enabled) {

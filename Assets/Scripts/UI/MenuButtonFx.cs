@@ -9,10 +9,12 @@ public class MenuButtonFx : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [SerializeField] private float duration = 0.12f;
 
     private bool hovered;
+    // Só a escala: DOKill no transform mataria também a subida do MenuIntro e o botão ficaria fora do lugar.
+    private Tween scaleTween;
     private bool selected;
 
     private void OnDisable() {
-        transform.DOKill();
+        scaleTween?.Kill();
         transform.localScale = Vector3.one;
         hovered = selected = false;
     }
@@ -29,7 +31,7 @@ public class MenuButtonFx : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     }
 
     private void ScaleTo(float scale) {
-        transform.DOKill();
-        transform.DOScale(scale, duration).SetEase(Ease.OutBack).SetUpdate(true).SetLink(gameObject);
+        scaleTween?.Kill();
+        scaleTween = transform.DOScale(scale, duration).SetEase(Ease.OutBack).SetUpdate(true).SetLink(gameObject);
     }
 }

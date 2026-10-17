@@ -255,6 +255,31 @@ public class GameplaySmokeTests {
     }
 
     [UnityTest]
+    public IEnumerator Menu_ButtonsEndIntroEquallySpaced() {
+        yield return new EnterPlayMode();
+
+        EditorSceneManager.LoadSceneInPlayMode("Assets/Scenes/MainMenu/MainMenu.unity", new LoadSceneParameters(LoadSceneMode.Single));
+        // A animação de entrada termina em ~1,8 s.
+        float until = Time.realtimeSinceStartup + 3f;
+        while (Time.realtimeSinceStartup < until) yield return null;
+
+        string[] names = { "StartGame", "Options", "Credits", "Exit" };
+        var ys = new float[names.Length];
+        for (int i = 0; i < names.Length; i++) {
+            GameObject go = GameObject.Find(names[i]);
+            Assert.IsNotNull(go, names[i]);
+            ys[i] = ((RectTransform)go.transform).anchoredPosition.y;
+            Debug.Log($"Menu {names[i]} y={ys[i]}");
+        }
+        for (int i = 1; i < ys.Length; i++) {
+            Assert.AreEqual(ys[1] - ys[0], ys[i] - ys[i - 1], 0.5f, $"{names[i]} fora do espaçamento: {string.Join(", ", ys)}");
+            Assert.Less(ys[i], ys[i - 1], $"{names[i]} fora de ordem: {string.Join(", ", ys)}");
+        }
+
+        yield return new ExitPlayMode();
+    }
+
+    [UnityTest]
     public IEnumerator Menu_ModeSelect_StartsMatch_ThenBackToMenu() {
         yield return new EnterPlayMode();
 

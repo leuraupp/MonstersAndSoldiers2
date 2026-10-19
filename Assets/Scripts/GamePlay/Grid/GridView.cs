@@ -13,6 +13,9 @@ public class GridView : MonoBehaviour {
     [Header("References")]
     [SerializeField] private Transform gridParent;
     [SerializeField] private GridCell cellPrefab;
+    [Tooltip("Moldura do tabuleiro (9-slice em Tiled); ajustada ao tamanho de cada mapa")]
+    [SerializeField] private SpriteRenderer boardFrame;
+    [SerializeField] private float framePadding = 0.45f;
 
     [Header("Colors")]
     [SerializeField] private Color emptyColor = Color.gray;
@@ -88,12 +91,27 @@ public class GridView : MonoBehaviour {
         }
 
         if (board.HasClues) CreateClueLabels(delayOffset);
+        FitFrame(clueSpace);
         RefreshAllFeedback();
         board.CellChanged += OnCellChanged;
     }
 
     private void OnDestroy() {
         Unbind();
+    }
+
+    /// <summary>Moldura em volta das casas e das pistas, do tamanho do mapa atual.</summary>
+    private void FitFrame(int clueSpace) {
+        if (boardFrame == null) return;
+        Vector3 min = CellToWorld(new GridPos(0, -clueSpace));
+        Vector3 max = CellToWorld(new GridPos(Board.Rows - 1 + clueSpace, Board.Cols - 1));
+        float pad = cellSize / 2f + framePadding;
+        var size = new Vector2(max.x - min.x + 2 * pad, max.y - min.y + 2 * pad);
+
+        Transform t = boardFrame.transform;
+        t.position = new Vector3((min.x + max.x) / 2f, (min.y + max.y) / 2f, t.position.z);
+        Vector3 scale = t.lossyScale;
+        boardFrame.size = new Vector2(size.x / scale.x, size.y / scale.y);
     }
 
     private void Unbind() {

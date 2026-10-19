@@ -35,6 +35,89 @@ public static class Phase4Setup {
 
     public static void RemovePhysicsLeftoversBatch() => Debug.Log(RemovePhysicsLeftovers());
 
+    [MenuItem("Tools/Phase 4/Apply Board Frame And Attack Button")]
+    private static void ApplyBoardAndButtonFromMenu() => ApplyBoardAndButtonBatch();
+
+    public static void ApplyBoardAndButtonBatch() {
+        Debug.Log(ApplyBoardFrame());
+        Debug.Log(ApplyAttackButton());
+    }
+
+    private const string GridPrefabPath = "Assets/Prefabs/GridCell/Grid.prefab";
+    private const string BoardFramePath = "Assets/Art/Board/Original/BoardFrame.png";
+    private const int BoardFrameBorder = 8; // igual a BORDER em Tools/art/board.py
+
+    /// <summary>Moldura gerada por Tools/art/board.py no lugar do recorte do pacote de UI de terceiros.</summary>
+    public static string ApplyBoardFrame() {
+        AssetDatabase.ImportAsset(BoardFramePath, ImportAssetOptions.ForceSynchronousImport);
+        if (!(AssetImporter.GetAtPath(BoardFramePath) is TextureImporter importer)) {
+            return $"{BoardFramePath} não encontrado; rode python Tools/art/board.py antes.";
+        }
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Single;
+        importer.spritePixelsPerUnit = 32;
+        importer.filterMode = FilterMode.Point;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.mipmapEnabled = false;
+        importer.spriteBorder = Vector4.one * BoardFrameBorder;
+        var settings = new TextureImporterSettings();
+        importer.ReadTextureSettings(settings);
+        settings.spriteMeshType = SpriteMeshType.FullRect; // Tiled exige FullRect
+        importer.SetTextureSettings(settings);
+        importer.SaveAndReimport();
+
+        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(BoardFramePath);
+        GameObject grid = PrefabUtility.LoadPrefabContents(GridPrefabPath);
+        Transform bg = grid.transform.Find("BG");
+        bg.localScale = Vector3.one; // a GridView ajusta o tamanho pelo SpriteRenderer.size
+        var frame = bg.GetComponentInChildren<SpriteRenderer>(true);
+        frame.sprite = sprite;
+        frame.drawMode = SpriteDrawMode.Tiled;
+        frame.tileMode = SpriteTileMode.Continuous;
+        frame.size = new Vector2(10.7f, 10.7f);
+
+        var view = new SerializedObject(grid.GetComponent<GridView>());
+        view.FindProperty("boardFrame").objectReferenceValue = frame;
+        view.ApplyModifiedPropertiesWithoutUndo();
+        PrefabUtility.SaveAsPrefabAsset(grid, GridPrefabPath);
+        PrefabUtility.UnloadPrefabContents(grid);
+        return "Moldura do tabuleiro trocada pelo BoardFrame.png (9-slice, Tiled).";
+    }
+
+    /// <summary>Botão Atacar com a arte gerada (Button_Atacar, 3 estados) e menor que o antigo.</summary>
+    public static string ApplyAttackButton() {
+        Scene scene = EditorSceneManager.OpenScene(MatchScenePath, OpenSceneMode.Single);
+        var button = scene.GetRootGameObjects()
+            .SelectMany(g => g.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+            .FirstOrDefault(b => b.name == "AttackButton");
+        if (button == null) return "AttackButton não encontrado na cena da partida.";
+
+        Sprite[] states = AssetDatabase.LoadAllAssetsAtPath("Assets/Art/UI/Original/Button_Atacar.png")
+            .OfType<Sprite>().OrderBy(s => s.name).ToArray();
+        if (states.Length < 3) return "Button_Atacar.png precisa de 3 quadros (normal, hover, pressed).";
+
+        var image = (UnityEngine.UI.Image)button.targetGraphic;
+        image.sprite = states[0];
+        image.type = UnityEngine.UI.Image.Type.Simple;
+        image.preserveAspect = true;
+        button.transition = UnityEngine.UI.Selectable.Transition.SpriteSwap;
+        button.spriteState = new UnityEngine.UI.SpriteState {
+            highlightedSprite = states[1], selectedSprite = states[1], pressedSprite = states[2],
+        };
+
+        // 3 px de tela por pixel da arte (o menu usa 4): menor, sem perder a nitidez.
+        var rect = (RectTransform)button.transform;
+        rect.localScale = Vector3.one;
+        rect.sizeDelta = new Vector2(states[0].rect.width * 3f, states[0].rect.height * 3f);
+
+        // O texto "ATACAR" já está desenhado no sprite.
+        foreach (Transform child in button.transform) child.gameObject.SetActive(false);
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return $"AttackButton com a arte Button_Atacar, {rect.sizeDelta.x}x{rect.sizeDelta.y}.";
+    }
+
     [MenuItem("Tools/Phase 4/Apply Cell Tile")]
     private static void ApplyCellTileFromMenu() => Debug.Log(ApplyCellTile());
 
@@ -110,7 +193,7 @@ public static class Phase4Setup {
         (Sfx.Error, 0.7f, new[] { "error_004" }),
         (Sfx.Attack, 0.8f, new[] { "knifeSlice", "knifeSlice2", "drawKnife1" }),
         (Sfx.MonsterDeath, 0.8f, new[] { "impactPunch_heavy_000", "impactPunch_heavy_001", "impactPunch_heavy_002" }),
-        (Sfx.Victory, 0.8f, new[] { "jingles_NES00" }),
+        (Sfx.Victory, 0.8f, new[] { "jingles_NES12" }), // termina subindo; o NES00 descia e soava como derrota
         (Sfx.UiClick, 0.6f, new[] { "click_002" })
     };
 

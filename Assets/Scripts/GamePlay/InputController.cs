@@ -25,6 +25,12 @@ public class InputController : MonoBehaviour {
     /// <summary>Quando false, nenhuma ação chega ao tabuleiro (transições e animações).</summary>
     public bool BoardInputEnabled { get; set; } = true;
 
+    /// <summary>Último tipo de dispositivo usado (GDD 8.3), também fora do tabuleiro.</summary>
+    public ControlScheme Scheme { get; private set; } = ControlScheme.KeyboardMouse;
+
+    /// <summary>Disparado quando o jogador troca entre mouse/teclado e controle.</summary>
+    public event Action<ControlScheme> SchemeChanged;
+
     private InputAction pointAction;
     private InputAction primaryAction;
     private InputAction secondaryAction;
@@ -94,6 +100,7 @@ public class InputController : MonoBehaviour {
         new[] { pointAction, primaryAction, secondaryAction, moveAction, attackAction, pauseAction };
 
     private void Update() {
+        UpdateScheme();
         if (pauseAction.WasPressedThisFrame()) PausePressed?.Invoke();
         if (attackAction.WasPressedThisFrame() && BoardInputEnabled) AttackPressed?.Invoke();
 
@@ -111,6 +118,25 @@ public class InputController : MonoBehaviour {
 
         grid.SetHighlight(cursor);
         HandleActions(grid.Board);
+    }
+
+    // A legenda segue o dispositivo de qualquer ação nossa; o mouse conta também só de mexer.
+    private void UpdateScheme() {
+        InputDevice device = null;
+        foreach (InputAction a in AllActions()) {
+            if (a == pointAction || !a.WasPerformedThisFrame() || a.activeControl == null) continue;
+            device = a.activeControl.device;
+            break;
+        }
+        if (device == null && Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 1f) {
+            device = Mouse.current;
+        }
+        if (device == null) return;
+
+        ControlScheme scheme = device is Gamepad ? ControlScheme.Gamepad : ControlScheme.KeyboardMouse;
+        if (scheme == Scheme) return;
+        Scheme = scheme;
+        SchemeChanged?.Invoke(scheme);
     }
 
     // O cursor segue o último tipo de dispositivo usado.
@@ -176,6 +202,7 @@ public class InputController : MonoBehaviour {
         var next = new GridPos(
             Mathf.Clamp(cursor.Value.Row + dir.y, 0, board.Rows - 1),
             Mathf.Clamp(cursor.Value.Col + dir.x, 0, board.Cols - 1));
+        if (next != cursor.Value) AudioService.Play(Sfx.CursorMove);
         cursor = next;
     }
 
@@ -193,7 +220,10 @@ public class InputController : MonoBehaviour {
 
         if (primaryDown || secondaryDown) {
             ResetPaint();
-            if (board.IsMonster(pos)) return; // clicar em monstro não faz nada (SFX na Fase 4)
+            if (board.IsMonster(pos)) {
+                AudioService.Play(Sfx.MonsterClick); // clicar em monstro só faz barulho
+                return;
+            }
             paintState = primaryDown ? board.NextStateForPrimary(pos) : board.NextStateForSecondary(pos);
             Paint(board, pos);
             return;

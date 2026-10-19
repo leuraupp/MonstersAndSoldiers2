@@ -86,7 +86,14 @@ public class AnimationSwitcher : MonoBehaviour {
             if (animator.runtimeAnimatorController != walkController) animator.runtimeAnimatorController = walkController;
             if (TryPlay(reaction.ToString(), out float reactionLength)) {
                 dead = reaction == AttackReaction.Death;
-                if (dead) AudioService.Play(Sfx.MonsterDeath);
+                if (dead) {
+                    AudioService.Play(Sfx.MonsterDeath);
+                    HitFx.Shake(true);
+                    var sr = GetComponent<SpriteRenderer>();
+                    float size = sr != null ? sr.bounds.size.y : transform.lossyScale.y;
+                    HitFx.Dust(sr != null ? sr.bounds.center : transform.position, size,
+                               sr != null ? sr.sortingLayerID : 0, sr != null ? sr.sortingOrder : 0);
+                }
                 yield return new WaitForSeconds(reactionLength + holdAfterClip);
             }
         }

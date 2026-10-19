@@ -154,6 +154,7 @@ public class GridView : MonoBehaviour {
 
     public void ShowValidationErrors(ValidationResult result) {
         AudioService.Play(Sfx.Error);
+        HitFx.Shake(false);
         var flashed = new HashSet<GridPos>();
         void Flash(GridPos p) {
             if (flashed.Add(p)) SetInvalidCell(p);

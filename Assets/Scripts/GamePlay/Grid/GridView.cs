@@ -104,6 +104,11 @@ public class GridView : MonoBehaviour {
         GridCell cell = cells[pos.Row, pos.Col];
         cell.SetState(state, emptyColor);
         if (state == CellState.Soldier) FaceNeighbors(pos);
+        AudioService.Play(state switch {
+            CellState.Soldier => Sfx.PlaceSoldier,
+            CellState.Grass => Sfx.PlaceGrass,
+            _ => Sfx.ClearCell
+        });
 
         RefreshClue(rowClueLabels, pos.Row, Board.CountSoldiersInRow(pos.Row), Board.RowClues);
         RefreshClue(colClueLabels, pos.Col, Board.CountSoldiersInCol(pos.Col), Board.ColClues);
@@ -148,6 +153,7 @@ public class GridView : MonoBehaviour {
     }
 
     public void ShowValidationErrors(ValidationResult result) {
+        AudioService.Play(Sfx.Error);
         var flashed = new HashSet<GridPos>();
         void Flash(GridPos p) {
             if (flashed.Add(p)) SetInvalidCell(p);
@@ -265,6 +271,7 @@ public class GridView : MonoBehaviour {
     /// <paramref name="onComplete"/> é chamado uma vez, quando a última animação terminar.
     /// </summary>
     public void PlayAttack(ValidationResult result, Action onComplete) {
+        AudioService.Play(Sfx.Attack);
         foreach (KeyValuePair<GridPos, GridPos> pair in result.SoldierToMonster) {
             cells[pair.Key.Row, pair.Key.Col].Face(MonsterRules.DirectionTo(pair.Key, pair.Value));
             cells[pair.Value.Row, pair.Value.Col].Face(MonsterRules.DirectionTo(pair.Value, pair.Key));

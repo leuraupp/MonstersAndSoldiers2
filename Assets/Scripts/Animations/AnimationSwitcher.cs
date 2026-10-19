@@ -86,6 +86,7 @@ public class AnimationSwitcher : MonoBehaviour {
             if (animator.runtimeAnimatorController != walkController) animator.runtimeAnimatorController = walkController;
             if (TryPlay(reaction.ToString(), out float reactionLength)) {
                 dead = reaction == AttackReaction.Death;
+                if (dead) AudioService.Play(Sfx.MonsterDeath);
                 yield return new WaitForSeconds(reactionLength + holdAfterClip);
             }
         }

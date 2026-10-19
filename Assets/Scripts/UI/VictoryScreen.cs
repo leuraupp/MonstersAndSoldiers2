@@ -32,6 +32,7 @@ public class VictoryScreen : MonoBehaviour {
                        + (seed != 0 ? $"\nSeed  {seed}" : "");
         if (recordBadge != null) recordBadge.SetActive(game.LastWinWasRecord);
         panel.SetActive(true);
+        AudioService.Play(Sfx.Victory);
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(nextButton.gameObject);
     }
 

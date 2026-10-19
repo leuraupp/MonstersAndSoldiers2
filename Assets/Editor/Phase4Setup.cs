@@ -45,7 +45,7 @@ public static class Phase4Setup {
 
     private const string GridPrefabPath = "Assets/Prefabs/GridCell/Grid.prefab";
     private const string BoardFramePath = "Assets/Art/Board/Original/BoardFrame.png";
-    private const int BoardFrameBorder = 8; // igual a BORDER em Tools/art/board.py
+    private const int BoardFrameBorder = 10; // igual a BORDER em Tools/art/board.py
 
     /// <summary>Moldura gerada por Tools/art/board.py no lugar do recorte do pacote de UI de terceiros.</summary>
     public static string ApplyBoardFrame() {
@@ -105,7 +105,8 @@ public static class Phase4Setup {
             highlightedSprite = states[1], selectedSprite = states[1], pressedSprite = states[2],
         };
 
-        // 3 px de tela por pixel da arte (o menu usa 4): menor, sem perder a nitidez.
+        // 3 px de tela por pixel da arte (o menu usa 4). O botão em si tem 58x16 dentro da célula
+        // de 72x20 (Tools/art/attack_button.py), então aparece com 174x48.
         var rect = (RectTransform)button.transform;
         rect.localScale = Vector3.one;
         rect.sizeDelta = new Vector2(states[0].rect.width * 3f, states[0].rect.height * 3f);
@@ -116,6 +117,39 @@ public static class Phase4Setup {
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
         return $"AttackButton com a arte Button_Atacar, {rect.sizeDelta.x}x{rect.sizeDelta.y}.";
+    }
+
+    [MenuItem("Tools/Phase 4/Apply Match Look (Frame, Button, Backdrop)")]
+    private static void ApplyMatchLookFromMenu() => ApplyMatchLookBatch();
+
+    public static void ApplyMatchLookBatch() {
+        Debug.Log(ApplyBoardFrame());
+        Debug.Log(ApplyAttackButton());
+        Debug.Log(AddMatchBackdrop());
+    }
+
+    /// <summary>Céu noturno do título como fundo da partida, atrás de tudo.</summary>
+    public static string AddMatchBackdrop() {
+        Scene scene = EditorSceneManager.OpenScene(MatchScenePath, OpenSceneMode.Single);
+        GameObject old = scene.GetRootGameObjects().FirstOrDefault(g => g.name == "MatchBackdrop");
+        if (old != null) Object.DestroyImmediate(old);
+
+        var sprite = AssetDatabase.LoadAllAssetsAtPath("Assets/Art/UI/Original/Title_Background.png")
+            .OfType<Sprite>().FirstOrDefault();
+        if (sprite == null) return "Title_Background.png sem sprite.";
+
+        var go = new GameObject("MatchBackdrop", typeof(SpriteRenderer), typeof(CameraBackdrop));
+        go.transform.position = new Vector3(0, 0, 50);
+        var sr = go.GetComponent<SpriteRenderer>();
+        sr.sprite = sprite;
+        sr.sortingLayerName = "Default";
+        sr.sortingOrder = -1000;
+        sr.color = new Color(0.75f, 0.75f, 0.8f); // um pouco mais escuro, para o tabuleiro se destacar
+        SceneManager.MoveGameObjectToScene(go, scene);
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return "Fundo da partida: céu noturno do título (MatchBackdrop).";
     }
 
     [MenuItem("Tools/Phase 4/Remove Soldier Counter")]

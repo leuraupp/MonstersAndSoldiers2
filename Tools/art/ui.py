@@ -316,7 +316,7 @@ LABELS = {  # file suffix -> (text, face, icon)
     "Opcoes": ("OPÇÕES", "blue", None),
     "Creditos": ("CRÉDITOS", "blue", None),
     "Sair": ("SAIR", "blue", None),
-    "Atacar": ("ATACAR", "red", "sword"),
+    # "Atacar" agora vem de attack_button.py (botão compacto da partida).
     "Pausa": ("PAUSA", "blue", None),
 }
 

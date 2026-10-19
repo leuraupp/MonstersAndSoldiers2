@@ -30,6 +30,43 @@ public static class Phase4Setup {
         Debug.Log(FillSoundLibrary());
     }
 
+    [MenuItem("Tools/Phase 4/Remove Physics Leftovers")]
+    private static void RemovePhysicsLeftoversFromMenu() => Debug.Log(RemovePhysicsLeftovers());
+
+    public static void RemovePhysicsLeftoversBatch() => Debug.Log(RemovePhysicsLeftovers());
+
+    private const string MenuScenePath = "Assets/Scenes/MainMenu/MainMenu.unity";
+    private const string GridCellPrefabPath = "Assets/Prefabs/GridCell/GridCell.prefab";
+
+    /// <summary>
+    /// O input do tabuleiro usa <see cref="GridView.TryWorldToCell"/>, então os raycasters de física da câmera
+    /// e os colliders 3D das casas sobraram de versões antigas. O BoxCollider2D do Grid fica: ele dá os limites.
+    /// </summary>
+    public static string RemovePhysicsLeftovers() {
+        var report = new System.Text.StringBuilder();
+
+        GameObject cell = PrefabUtility.LoadPrefabContents(GridCellPrefabPath);
+        Collider[] colliders = cell.GetComponentsInChildren<Collider>(true);
+        foreach (Collider c in colliders) Object.DestroyImmediate(c);
+        PrefabUtility.SaveAsPrefabAsset(cell, GridCellPrefabPath);
+        PrefabUtility.UnloadPrefabContents(cell);
+        report.AppendLine($"GridCell: {colliders.Length} collider(s) 3D removido(s).");
+
+        foreach (string path in new[] { MatchScenePath, MenuScenePath }) {
+            Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            var raycasters = scene.GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<UnityEngine.EventSystems.PhysicsRaycaster>(true))
+                .ToArray(); // Physics2DRaycaster herda de PhysicsRaycaster
+            foreach (var r in raycasters) Object.DestroyImmediate(r);
+            if (raycasters.Length > 0) {
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+            }
+            report.AppendLine($"{Path.GetFileNameWithoutExtension(path)}: {raycasters.Length} raycaster(s) de física removido(s).");
+        }
+        return report.ToString().TrimEnd();
+    }
+
     private const string KenneyDir = "Assets/Audio/Kenney/";
 
     // Escolha inicial por nome de arquivo (CC0, créditos em CREDITS.md). Troque à vontade no Inspector.

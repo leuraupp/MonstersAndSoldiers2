@@ -35,6 +35,37 @@ public static class Phase4Setup {
 
     public static void RemovePhysicsLeftoversBatch() => Debug.Log(RemovePhysicsLeftovers());
 
+    [MenuItem("Tools/Phase 4/Apply Cell Tile")]
+    private static void ApplyCellTileFromMenu() => Debug.Log(ApplyCellTile());
+
+    public static void ApplyCellTileBatch() => Debug.Log(ApplyCellTile());
+
+    private const string CellTilePath = "Assets/Art/Board/Original/Cell.png";
+
+    /// <summary>Usa o tile gerado por Tools/art/cell.py (paleta única) como fundo das casas.</summary>
+    public static string ApplyCellTile() {
+        AssetDatabase.ImportAsset(CellTilePath, ImportAssetOptions.ForceSynchronousImport);
+        if (!(AssetImporter.GetAtPath(CellTilePath) is TextureImporter importer)) {
+            return $"{CellTilePath} não encontrado; rode python Tools/art/cell.py antes.";
+        }
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Single;
+        importer.spritePixelsPerUnit = 32;
+        importer.filterMode = FilterMode.Point;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.mipmapEnabled = false;
+        importer.SaveAndReimport();
+
+        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CellTilePath);
+        GameObject cell = PrefabUtility.LoadPrefabContents(GridCellPrefabPath);
+        var view = cell.GetComponent<GridCell>();
+        var bg = (SpriteRenderer)new SerializedObject(view).FindProperty("BGColor").objectReferenceValue;
+        bg.sprite = sprite;
+        PrefabUtility.SaveAsPrefabAsset(cell, GridCellPrefabPath);
+        PrefabUtility.UnloadPrefabContents(cell);
+        return "Fundo das casas trocado pelo Cell.png (PPU 32, Point, sem compressão).";
+    }
+
     private const string MenuScenePath = "Assets/Scenes/MainMenu/MainMenu.unity";
     private const string GridCellPrefabPath = "Assets/Prefabs/GridCell/GridCell.prefab";
 

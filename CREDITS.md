@@ -19,3 +19,11 @@ CC0 não exige crédito, mas a Kenney pede, e o jogo credita mesmo assim.
 |---|---|---|---|
 | [Perces](https://opengameart.org/content/perces) | poinl | CC0 1.0 | `Assets/Audio/Music/perces.mp3` |
 | [Lonely Night](https://opengameart.org/node/162656) | Centurion_of_war | CC0 1.0 | `Assets/Audio/Music/lonely_night.ogg` |
+
+## Arte
+
+| Asset | Autor | Licença | Arquivos |
+|---|---|---|---|
+| Pacote de UI comprado no itch.io (**nome e autor a confirmar**) | ? | Licença de compra do itch.io | `Assets/Art/UI/UI assets (3x).png` (fundo do tabuleiro em `Grid.prefab` e na cena da partida) |
+
+O resto da arte (personagens, título, botões, grama, casas) é original, gerada por `Tools/art`.

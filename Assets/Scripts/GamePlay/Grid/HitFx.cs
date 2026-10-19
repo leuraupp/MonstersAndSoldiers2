@@ -7,9 +7,9 @@ using UnityEngine;
 /// </summary>
 public static class HitFx {
     private static readonly Color[] DustColors = {
-        new Color32(0xC8, 0xB0, 0x8A, 0xFF),
-        new Color32(0x9C, 0x84, 0x64, 0xFF),
-        new Color32(0xF4, 0xE9, 0xD0, 0xFF)
+        new Color32(0xD6, 0xA7, 0x71, 0xFF), // wood (Tools/art/pixel.py)
+        new Color32(0xB0, 0x7A, 0x4E, 0xFF), // wood
+        new Color32(0xF4, 0xF1, 0xDE, 0xFF)  // white
     };
 
     private static Sprite pixel;

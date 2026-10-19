@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0259a02f3b0e9f46b9e736b1dc3bbb8, type: 3}
   m_Name: SoundLibrary
   m_EditorClassIdentifier: Assembly-CSharp::SoundLibrary
-  menuMusic: {fileID: 0}
-  matchMusic: {fileID: 0}
+  menuMusic:
+  - {fileID: 8300000, guid: 89ece2da367daeb4b93d85e9b08f1ad2, type: 3}
+  - {fileID: 8300000, guid: cbe3745cefb2265469668d4f09ffabdb, type: 3}
+  matchMusic:
+  - {fileID: 8300000, guid: 89ece2da367daeb4b93d85e9b08f1ad2, type: 3}
+  - {fileID: 8300000, guid: cbe3745cefb2265469668d4f09ffabdb, type: 3}
   musicVolume: 0.7
   effects:
   - id: 0

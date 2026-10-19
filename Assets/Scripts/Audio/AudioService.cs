@@ -21,6 +21,7 @@ public class AudioService : MonoBehaviour {
     private AudioSource musicSource;
     private AudioSource sfxSource;
     private MusicTrack currentTrack = MusicTrack.None;
+    private GridController observedGrid;
     private readonly Dictionary<Sfx, float> lastPlayed = new Dictionary<Sfx, float>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -59,20 +60,32 @@ public class AudioService : MonoBehaviour {
         Instance = null;
         OptionsService.Changed -= OnOptionsChanged;
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (observedGrid != null) observedGrid.BoardChanged -= OnBoardChanged;
         musicSource.DOKill();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
         HookButtons(scene);
-        PlayMusic(TrackFor(scene));
+
+        // Partida tem tabuleiro: a música é sorteada a cada fase. O resto é menu.
+        GridController grid = FindGrid(scene);
+        if (observedGrid != null) observedGrid.BoardChanged -= OnBoardChanged;
+        observedGrid = grid;
+        if (grid != null) {
+            grid.BoardChanged += OnBoardChanged;
+        } else if (currentTrack != MusicTrack.Menu) {
+            PlayMusic(MusicTrack.Menu);
+        }
     }
 
-    // Partida tem tabuleiro; o resto é menu.
-    private static MusicTrack TrackFor(Scene scene) {
+    private void OnBoardChanged(BoardModel board) => PlayMusic(MusicTrack.Match);
+
+    private static GridController FindGrid(Scene scene) {
         foreach (GameObject root in scene.GetRootGameObjects()) {
-            if (root.GetComponentInChildren<GridController>(true) != null) return MusicTrack.Match;
+            GridController grid = root.GetComponentInChildren<GridController>(true);
+            if (grid != null) return grid;
         }
-        return MusicTrack.Menu;
+        return null;
     }
 
     // Clique de botão em todas as telas, sem precisar mexer em cada cena ou prefab.
@@ -88,11 +101,12 @@ public class AudioService : MonoBehaviour {
 
     // ---------- Música ----------
 
+    /// <summary>Sorteia uma faixa de <paramref name="track"/>. Se cair na que já toca, ela continua.</summary>
     public void PlayMusic(MusicTrack track) {
-        if (track == currentTrack) return;
         currentTrack = track;
+        AudioClip clip = library != null ? library.PickMusic(track) : null;
+        if (clip != null && clip == musicSource.clip && musicSource.isPlaying) return;
 
-        AudioClip clip = library != null ? library.Music(track) : null;
         musicSource.DOKill();
         if (clip == null) {
             musicSource.DOFade(0f, MusicFade).SetUpdate(true).OnComplete(musicSource.Stop);

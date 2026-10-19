@@ -66,9 +66,37 @@ public static class Phase4Setup {
         }
 
         library.effects = entries.ToArray();
+
+        // As duas faixas valem para menu e partida; o AudioService sorteia uma (a cada fase, na partida).
+        var music = new System.Collections.Generic.List<AudioClip>();
+        foreach (string path in MusicFiles) {
+            ConfigureMusic(path);
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip != null) music.Add(clip);
+            else missing++;
+        }
+        library.menuMusic = music.ToArray();
+        library.matchMusic = music.ToArray();
+
         EditorUtility.SetDirty(library);
         AssetDatabase.SaveAssets();
-        return missing == 0 ? "SoundLibrary preenchido com os efeitos da Kenney." : $"SoundLibrary preenchido; {missing} clip(s) não encontrados.";
+        return missing == 0 ? "SoundLibrary preenchido com os efeitos da Kenney e as músicas." : $"SoundLibrary preenchido; {missing} clip(s) não encontrados.";
+    }
+
+    // Músicas CC0 do OpenGameArt (créditos em CREDITS.md).
+    private static readonly string[] MusicFiles = {
+        "Assets/Audio/Music/perces.mp3",
+        "Assets/Audio/Music/lonely_night.ogg"
+    };
+
+    // Música: streaming, para não ocupar memória com a faixa inteira descomprimida.
+    private static void ConfigureMusic(string path) {
+        if (!(AssetImporter.GetAtPath(path) is AudioImporter importer)) return;
+        AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+        if (settings.loadType == AudioClipLoadType.Streaming) return;
+        settings.loadType = AudioClipLoadType.Streaming;
+        importer.defaultSampleSettings = settings;
+        importer.SaveAndReimport();
     }
 
     // Efeito curto: mono e descomprimido ao carregar, que é o mais barato de tocar (inclusive no WebGL).

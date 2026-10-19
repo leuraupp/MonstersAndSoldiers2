@@ -38,19 +38,24 @@ public class SoundLibrary : ScriptableObject {
     }
 
     [Header("Música")]
-    public AudioClip menuMusic;
-    public AudioClip matchMusic;
+    [Tooltip("Uma é sorteada ao abrir o menu")]
+    public AudioClip[] menuMusic = Array.Empty<AudioClip>();
+    [Tooltip("Uma é sorteada a cada fase")]
+    public AudioClip[] matchMusic = Array.Empty<AudioClip>();
     [Range(0f, 1f)] public float musicVolume = 0.7f;
 
     [Header("Efeitos")]
     public SfxEntry[] effects = Array.Empty<SfxEntry>();
 
-    public AudioClip Music(MusicTrack track) {
-        return track switch {
+    /// <summary>Sorteia uma faixa do <paramref name="track"/>; null se não houver nenhuma.</summary>
+    public AudioClip PickMusic(MusicTrack track) {
+        AudioClip[] clips = track switch {
             MusicTrack.Menu => menuMusic,
             MusicTrack.Match => matchMusic,
             _ => null
         };
+        if (clips == null || clips.Length == 0) return null;
+        return clips[UnityEngine.Random.Range(0, clips.Length)];
     }
 
     public SfxEntry Find(Sfx id) {

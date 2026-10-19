@@ -17,32 +17,50 @@ MonoBehaviour:
   musicVolume: 0.7
   effects:
   - id: 0
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 4110a27408bc20a48accf3f53c037be9, type: 3}
+    volume: 0.4
   - id: 1
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 953767acb446b714c8eb0958b0d21c8c, type: 3}
+    - {fileID: 8300000, guid: 7d393b56f7f98f0448696d7909f1a663, type: 3}
+    volume: 0.8
   - id: 2
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: af4930e00c388ec46a4f4606ea1db4ef, type: 3}
+    - {fileID: 8300000, guid: 5940b7625c147284a9a7a764f0c80358, type: 3}
+    - {fileID: 8300000, guid: 1d09dca3d729ac1498c40ced2956eca8, type: 3}
+    volume: 0.6
   - id: 3
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: c03da98d4c5643b41ac805a8edb70b68, type: 3}
+    volume: 0.5
   - id: 4
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 2770b86db5b30434793bc9c7ec64db18, type: 3}
+    - {fileID: 8300000, guid: e9d0c7ece7a3ecd43a78c3f5b6b67bc1, type: 3}
+    volume: 0.7
   - id: 5
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: bffb1ac60f1fcfc44bd6bbdfa693b6f3, type: 3}
+    volume: 0.7
   - id: 6
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 0c5a3f8522351ff43a1cd98564b141cf, type: 3}
+    - {fileID: 8300000, guid: f9dff34ce7923b94e9c92e6b79852e1f, type: 3}
+    - {fileID: 8300000, guid: 0ebaaf7018c7ec640881385333bbf1a0, type: 3}
+    volume: 0.8
   - id: 7
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 7bd0906a74c76254985aad39c10ca12c, type: 3}
+    - {fileID: 8300000, guid: adea8e00ab416f24b8ad355fe6204a3e, type: 3}
+    - {fileID: 8300000, guid: d0efc1a44aff3db4989df34eef9c07dd, type: 3}
+    volume: 0.8
   - id: 8
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: cea3bd609843f68479d5a12abf804048, type: 3}
+    volume: 0.8
   - id: 9
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: bb247c332ad161540a3c12362c35d352, type: 3}
+    volume: 0.6

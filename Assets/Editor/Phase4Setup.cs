@@ -22,6 +22,66 @@ public static class Phase4Setup {
     [MenuItem("Tools/Phase 4/Create Sound Library")]
     private static void CreateSoundLibraryFromMenu() => Debug.Log(CreateSoundLibrary());
 
+    [MenuItem("Tools/Phase 4/Fill Sound Library (Kenney)")]
+    private static void FillSoundLibraryFromMenu() => Debug.Log(FillSoundLibrary());
+
+    public static void FillSoundLibraryBatch() {
+        Debug.Log(CreateSoundLibrary());
+        Debug.Log(FillSoundLibrary());
+    }
+
+    private const string KenneyDir = "Assets/Audio/Kenney/";
+
+    // Escolha inicial por nome de arquivo (CC0, créditos em CREDITS.md). Troque à vontade no Inspector.
+    private static readonly (Sfx id, float volume, string[] files)[] KenneyEffects = {
+        (Sfx.CursorMove, 0.4f, new[] { "tick_001" }),
+        (Sfx.PlaceSoldier, 0.8f, new[] { "beltHandle1", "beltHandle2" }),
+        (Sfx.PlaceGrass, 0.6f, new[] { "footstep_grass_000", "footstep_grass_001", "footstep_grass_002" }),
+        (Sfx.ClearCell, 0.5f, new[] { "minimize_001" }),
+        (Sfx.MonsterClick, 0.7f, new[] { "impactSoft_medium_000", "impactSoft_medium_001" }),
+        (Sfx.Error, 0.7f, new[] { "error_004" }),
+        (Sfx.Attack, 0.8f, new[] { "knifeSlice", "knifeSlice2", "drawKnife1" }),
+        (Sfx.MonsterDeath, 0.8f, new[] { "impactPunch_heavy_000", "impactPunch_heavy_001", "impactPunch_heavy_002" }),
+        (Sfx.Victory, 0.8f, new[] { "jingles_NES00" }),
+        (Sfx.UiClick, 0.6f, new[] { "click_002" })
+    };
+
+    /// <summary>Liga os clips da Kenney ao SoundLibrary e ajusta a importação para efeitos curtos.</summary>
+    public static string FillSoundLibrary() {
+        var library = AssetDatabase.LoadAssetAtPath<SoundLibrary>(SoundLibraryPath);
+        if (library == null) return $"{SoundLibraryPath} não existe; rode Create Sound Library antes.";
+
+        int missing = 0;
+        var entries = new System.Collections.Generic.List<SoundLibrary.SfxEntry>();
+        foreach ((Sfx id, float volume, string[] files) in KenneyEffects) {
+            var clips = new System.Collections.Generic.List<AudioClip>();
+            foreach (string file in files) {
+                string path = KenneyDir + file + ".ogg";
+                ConfigureShortSfx(path);
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (clip != null) clips.Add(clip);
+                else missing++;
+            }
+            entries.Add(new SoundLibrary.SfxEntry { id = id, volume = volume, clips = clips.ToArray() });
+        }
+
+        library.effects = entries.ToArray();
+        EditorUtility.SetDirty(library);
+        AssetDatabase.SaveAssets();
+        return missing == 0 ? "SoundLibrary preenchido com os efeitos da Kenney." : $"SoundLibrary preenchido; {missing} clip(s) não encontrados.";
+    }
+
+    // Efeito curto: mono e descomprimido ao carregar, que é o mais barato de tocar (inclusive no WebGL).
+    private static void ConfigureShortSfx(string path) {
+        if (!(AssetImporter.GetAtPath(path) is AudioImporter importer)) return;
+        AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+        if (importer.forceToMono && settings.loadType == AudioClipLoadType.DecompressOnLoad) return;
+        importer.forceToMono = true;
+        settings.loadType = AudioClipLoadType.DecompressOnLoad;
+        importer.defaultSampleSettings = settings;
+        importer.SaveAndReimport();
+    }
+
     /// <summary>Legenda de controles (GDD 8.3) no canto inferior esquerdo do HUD da partida.</summary>
     public static string AddControlsLegend() {
         Scene scene = EditorSceneManager.OpenScene(MatchScenePath, OpenSceneMode.Single);

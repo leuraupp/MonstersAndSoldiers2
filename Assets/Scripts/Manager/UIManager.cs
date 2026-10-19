@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// HUD da partida (GDD 8.3): modo e seed, tempo, "soldados colocados / total" e os botões Atacar e Pausa.
+/// HUD da partida (GDD 8.3): modo e seed, tempo e os botões Atacar e Pausa.
+/// A contagem de soldados fica nas pistas das bordas do tabuleiro.
 /// </summary>
 public class UIManager : MonoBehaviour {
     public static UIManager Instance;
 
-    [SerializeField] private TextMeshProUGUI soldiersRemainingText;
     [SerializeField] private Button attackButton;
 
     [Header("Fase 3")]
@@ -18,7 +18,6 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private Button pauseButton;
 
-    private BoardModel board;
     private int shownSeconds = -1;
 
     private void Awake() {
@@ -46,7 +45,6 @@ public class UIManager : MonoBehaviour {
 
     private void OnDestroy() {
         if (GridController.Instance != null) GridController.Instance.BoardChanged -= Bind;
-        Bind(null);
         if (Instance == this) Instance = null;
     }
 
@@ -59,21 +57,7 @@ public class UIManager : MonoBehaviour {
     }
 
     private void Bind(BoardModel newBoard) {
-        if (board != null) board.CellChanged -= OnCellChanged;
-        board = newBoard;
-        if (board != null) board.CellChanged += OnCellChanged;
-        RefreshSoldierCount();
         RefreshModeAndSeed();
-    }
-
-    private void OnCellChanged(GridPos pos, CellState state) {
-        RefreshSoldierCount();
-    }
-
-    // HUD da GDD 8.3: "soldados colocados / total".
-    private void RefreshSoldierCount() {
-        if (soldiersRemainingText == null) return;
-        soldiersRemainingText.text = board != null ? $"{board.SoldierCount} / {board.RequiredSoldierTotal}" : "";
     }
 
     private void RefreshModeAndSeed() {

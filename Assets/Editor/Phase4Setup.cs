@@ -118,6 +118,25 @@ public static class Phase4Setup {
         return $"AttackButton com a arte Button_Atacar, {rect.sizeDelta.x}x{rect.sizeDelta.y}.";
     }
 
+    [MenuItem("Tools/Phase 4/Remove Soldier Counter")]
+    private static void RemoveSoldierCounterFromMenu() => Debug.Log(RemoveSoldierCounter());
+
+    public static void RemoveSoldierCounterBatch() => Debug.Log(RemoveSoldierCounter());
+
+    /// <summary>O "colocados / total" saiu do HUD: as pistas das bordas já dizem isso.</summary>
+    public static string RemoveSoldierCounter() {
+        Scene scene = EditorSceneManager.OpenScene(MatchScenePath, OpenSceneMode.Single);
+        string[] names = { "SoldierLimitText", "SoldierIcon" };
+        var found = scene.GetRootGameObjects()
+            .SelectMany(g => g.GetComponentsInChildren<Transform>(true))
+            .Where(t => names.Contains(t.name))
+            .ToArray();
+        foreach (Transform t in found) Object.DestroyImmediate(t.gameObject);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return $"Contador de soldados removido do HUD ({found.Length} objeto(s)).";
+    }
+
     [MenuItem("Tools/Phase 4/Apply Cell Tile")]
     private static void ApplyCellTileFromMenu() => Debug.Log(ApplyCellTile());
 

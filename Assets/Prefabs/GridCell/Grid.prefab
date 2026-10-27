@@ -128,10 +128,10 @@ MonoBehaviour:
   cellPrefab: {fileID: 7494783053770387584, guid: abcd9217a493f7344808d7b282cdd148, type: 3}
   boardFrame: {fileID: 7945376860656267346}
   framePadding: 0.45
-  emptyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  slimeColor: {r: 0, g: 1, b: 0, a: 1}
-  goblinColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  orcColor: {r: 1, g: 0, b: 0, a: 1}
+  emptyColor: {r: 0.654902, g: 0.8627451, b: 0.4862745, a: 1}
+  slimeColor: {r: 0.61960787, g: 0.9019608, b: 0.8392157, a: 1}
+  goblinColor: {r: 0.9411765, g: 0.8784314, b: 0.5411765, a: 1}
+  orcColor: {r: 0.9490196, g: 0.6901961, b: 0.54901963, a: 1}
   clueColor: {r: 1, g: 1, b: 1, a: 1}
   clueDoneColor: {r: 1, g: 1, b: 1, a: 0.35}
   clueOverColor: {r: 1, g: 0.35, b: 0.35, a: 1}

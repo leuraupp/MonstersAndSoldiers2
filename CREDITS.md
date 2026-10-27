@@ -26,4 +26,4 @@ CC0 não exige crédito, mas a Kenney pede, e o jogo credita mesmo assim.
 |---|---|---|---|
 | Pacote de UI comprado no itch.io (**nome e autor a confirmar**) | ? | Licença de compra do itch.io | `Assets/Art/UI/UI assets (3x).png` (fundo do tabuleiro em `Grid.prefab` e na cena da partida) |
 
-O resto da arte (personagens, título, botões, grama, casas) é original, gerada por `Tools/art`.
+O resto da arte (personagens, título, botões, grama, casas) é original, gerada por `Tools/art` e com o Claude (Anthropic) a pedido do autor.

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Monsters &amp; Soldiers</title>
+    <style>
+      :root { --footer-height: 40px; }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #1b1428;
+        color: #fff6d5;
+        font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        overflow: hidden;
+      }
+
+      #unity-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100svh;
+      }
+
+      /* O canvas acompanha a janela mantendo 16:9, tanto no iframe do itch.io
+         quanto na página do portfólio, em vez de um tamanho fixo em pixels. */
+      #unity-canvas {
+        width: min(100vw, calc((100svh - var(--footer-height)) * 16 / 9));
+        aspect-ratio: 16 / 9;
+        height: auto;
+        display: block;
+        background: #1b1428;
+        outline: none;
+        image-rendering: pixelated;
+      }
+
+      #unity-loading-bar {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      #unity-loading-bar p { margin: 0; color: #b4b0c4; letter-spacing: .04em; }
+
+      #unity-progress-bar-empty {
+        width: 240px;
+        height: 8px;
+        background: #332d58;
+        overflow: hidden;
+      }
+
+      #unity-progress-bar-full {
+        width: 0;
+        height: 100%;
+        background: #ffd35c;
+        transition: width .2s ease;
+      }
+
+      #unity-footer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: var(--footer-height);
+        width: min(100vw, calc((100svh - var(--footer-height)) * 16 / 9));
+        padding: 0 4px;
+      }
+
+      #unity-build-title { font-weight: 600; letter-spacing: .02em; }
+
+      #unity-fullscreen-button {
+        margin-left: auto;
+        padding: 5px 12px;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, .06);
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      #unity-fullscreen-button:hover { background: rgba(255, 255, 255, .12); }
+
+      #unity-warning { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); }
+      #unity-warning div { margin: 4px 0; padding: 10px; border-radius: 4px; color: #1b1428; }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <p>Carregando Monsters &amp; Soldiers…</p>
+        <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+      </div>
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-build-title">Monsters &amp; Soldiers</div>
+        <button id="unity-fullscreen-button" type="button">Tela cheia</button>
+      </div>
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+
+      function unityShowBanner(msg, type) {
+        var banner = document.querySelector("#unity-warning");
+        var div = document.createElement("div");
+        div.innerHTML = msg;
+        div.style.background = type === "error" ? "#ff6b6b" : "#ffd35c";
+        banner.appendChild(div);
+        if (type !== "error") setTimeout(function () { banner.removeChild(div); }, 5000);
+      }
+
+      var buildUrl = "Build";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+      };
+
+      document.querySelector("#unity-loading-bar").style.display = "flex";
+
+      var script = document.createElement("script");
+      script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+        }).then(function (unityInstance) {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#unity-fullscreen-button").onclick = function () {
+            unityInstance.SetFullscreen(1);
+          };
+          canvas.focus();
+        }).catch(function (message) {
+          unityShowBanner(message, "error");
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

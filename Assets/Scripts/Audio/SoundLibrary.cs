@@ -47,15 +47,20 @@ public class SoundLibrary : ScriptableObject {
     [Header("Efeitos")]
     public SfxEntry[] effects = Array.Empty<SfxEntry>();
 
-    /// <summary>Sorteia uma faixa do <paramref name="track"/>; null se não houver nenhuma.</summary>
-    public AudioClip PickMusic(MusicTrack track) {
+    /// <summary>
+    /// Sorteia uma faixa do <paramref name="track"/>; null se não houver nenhuma.
+    /// <paramref name="avoid"/> fica de fora do sorteio quando há outra opção, para a troca de tela trocar a música.
+    /// </summary>
+    public AudioClip PickMusic(MusicTrack track, AudioClip avoid = null) {
         AudioClip[] clips = track switch {
             MusicTrack.Menu => menuMusic,
             MusicTrack.Match => matchMusic,
             _ => null
         };
         if (clips == null || clips.Length == 0) return null;
-        return clips[UnityEngine.Random.Range(0, clips.Length)];
+        AudioClip[] options = Array.FindAll(clips, c => c != null && c != avoid);
+        if (options.Length == 0) options = clips;
+        return options[UnityEngine.Random.Range(0, options.Length)];
     }
 
     public SfxEntry Find(Sfx id) {

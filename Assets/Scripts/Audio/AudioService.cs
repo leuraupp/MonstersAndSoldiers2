@@ -101,10 +101,14 @@ public class AudioService : MonoBehaviour {
 
     // ---------- Música ----------
 
-    /// <summary>Sorteia uma faixa de <paramref name="track"/>. Se cair na que já toca, ela continua.</summary>
+    /// <summary>
+    /// Sorteia uma faixa de <paramref name="track"/>. Entre fases, se cair na que já toca, ela continua;
+    /// do menu para a partida (e de volta), a faixa atual fica fora do sorteio para a música mudar.
+    /// </summary>
     public void PlayMusic(MusicTrack track) {
+        AudioClip avoid = track != currentTrack ? musicSource.clip : null;
         currentTrack = track;
-        AudioClip clip = library != null ? library.PickMusic(track) : null;
+        AudioClip clip = library != null ? library.PickMusic(track, avoid) : null;
         if (clip != null && clip == musicSource.clip && musicSource.isPlaying) return;
 
         musicSource.DOKill();

@@ -28,7 +28,10 @@ public class InputController : MonoBehaviour {
     /// <summary>Último tipo de dispositivo usado (GDD 8.3), também fora do tabuleiro.</summary>
     public ControlScheme Scheme { get; private set; } = ControlScheme.KeyboardMouse;
 
-    /// <summary>Disparado quando o jogador troca entre mouse/teclado e controle.</summary>
+    /// <summary>Família do último controle usado (Xbox ou PlayStation), para os ícones da legenda.</summary>
+    public GamepadStyle PadStyle { get; private set; } = GamepadStyle.Xbox;
+
+    /// <summary>Disparado quando o jogador troca entre mouse/teclado e controle, ou de família de controle.</summary>
     public event Action<ControlScheme> SchemeChanged;
 
     private InputAction pointAction;
@@ -134,9 +137,20 @@ public class InputController : MonoBehaviour {
         if (device == null) return;
 
         ControlScheme scheme = device is Gamepad ? ControlScheme.Gamepad : ControlScheme.KeyboardMouse;
-        if (scheme == Scheme) return;
+        GamepadStyle style = device is Gamepad ? StyleOf(device) : PadStyle;
+        if (scheme == Scheme && style == PadStyle) return;
         Scheme = scheme;
+        PadStyle = style;
         SchemeChanged?.Invoke(scheme);
+    }
+
+    // DualShock e DualSense herdam o layout "DualShockGamepad"; qualquer outro controle usa os ícones do Xbox.
+    // Comparar pelo nome do layout evita depender das classes de DualShock, que variam por plataforma.
+    private static GamepadStyle StyleOf(InputDevice device) {
+        string layout = device.layout;
+        return !string.IsNullOrEmpty(layout) && InputSystem.IsFirstLayoutBasedOnSecond(layout, "DualShockGamepad")
+            ? GamepadStyle.PlayStation
+            : GamepadStyle.Xbox;
     }
 
     // O cursor segue o último tipo de dispositivo usado.

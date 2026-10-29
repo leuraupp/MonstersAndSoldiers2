@@ -86,7 +86,7 @@ public static class Phase3UISetup {
         RectTransform balloon = Panel(hintRoot, "Balloon", new Vector2(600, 460));
         Place(balloon, new Vector2(0, 0.5f), new Vector2(24, 70), null);
         Text(balloon, "Title", "Nova regra", 40, TextAlignmentOptions.Top, Gold, TitleFontPath)
-            .rectTransform.Let(r => Place(r, new Vector2(0.5f, 1), new Vector2(0, -26), new Vector2(500, 56)));
+            .rectTransform.Let(r => Place(r, new Vector2(0.5f, 1), new Vector2(0, -50), new Vector2(500, 56)));
         TextMeshProUGUI hintText = Text(balloon, "Text", "A vila está cercada! Cada Slime precisa de 1 soldado numa das 8 casas ao redor.\n" +
             "Soldados não podem se encostar, nem na diagonal. Clique numa casa para pôr um soldado.", 30, TextAlignmentOptions.TopLeft, Ink);
         hintText.textWrappingMode = TextWrappingModes.Normal;

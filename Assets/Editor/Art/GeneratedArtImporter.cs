@@ -14,6 +14,16 @@ public class GeneratedArtImporter : AssetPostprocessor {
     public const string BoardRoot = "Assets/Art/Board/Original/"; // enfeites da casa (grama), quadros de 32 como os personagens
     public const string UIRoot = "Assets/Art/UI/Original/";
 
+    // Ícones de controle (mouse, Xbox, PlayStation) da legenda: grade de 16 px com 1 px de folga em volta.
+    public const string InputIconsPath = "Assets/Art/UI/Input/InputIcons.png";
+    public const int InputIconSize = 16;
+    private const int InputIconStride = 18;
+    private const int InputIconColumns = 8;
+    public static readonly string[] InputIconNames = {
+        "Mouse", "Mouse_Left", "Mouse_Right", "Xbox_A", "Xbox_B", "Xbox_X", "Xbox_Y", "Xbox_Menu",
+        "PS_Cross", "PS_Circle", "PS_Square", "PS_Triangle", "PS_Options", "Pad_DPad", "Pad_LStick", "Pad_RStick"
+    };
+
     public const int CharacterFrame = 32;
     public const int CharacterPPU = 32;     // 1 quadro = 1 unidade = 1 casa
     private const int UIPPU = 25;           // Canvas usa 100 px/unidade: "Set Native Size" deixa a UI em 4x
@@ -44,7 +54,8 @@ public class GeneratedArtImporter : AssetPostprocessor {
     private static bool IsUI(string path) => path.StartsWith(UIRoot) && path.EndsWith(".png");
 
     private void OnPreprocessTexture() {
-        if (!IsCharacter(assetPath) && !IsUI(assetPath)) return;
+        bool inputIcons = assetPath == InputIconsPath;
+        if (!IsCharacter(assetPath) && !IsUI(assetPath) && !inputIcons) return;
 
         var importer = (TextureImporter)assetImporter;
         importer.textureType = TextureImporterType.Sprite;
@@ -58,7 +69,10 @@ public class GeneratedArtImporter : AssetPostprocessor {
         string name = Path.GetFileNameWithoutExtension(assetPath);
         importer.spritePixelsPerUnit = IsCharacter(assetPath) ? CharacterPPU : UIPPU;
 
-        if (IsCharacter(assetPath)) {
+        if (inputIcons) {
+            importer.spritePixelsPerUnit = InputIconSize;
+            SliceInputIcons(importer);
+        } else if (IsCharacter(assetPath)) {
             Slice(importer, name, CharacterFrame, CharacterFrame, Vector4.zero);
         } else if (UISheets.TryGetValue(name, out var sheet)) {
             Slice(importer, name, sheet.w, sheet.h, sheet.border);
@@ -73,17 +87,38 @@ public class GeneratedArtImporter : AssetPostprocessor {
         }
     }
 
+    /// <summary>Fatia a folha de ícones de controle pelos nomes de <see cref="InputIconNames"/>.</summary>
+    private void SliceInputIcons(TextureImporter importer) {
+        importer.GetSourceTextureWidthAndHeight(out _, out int height);
+        var frames = new List<(string name, Rect rect)>();
+        for (int i = 0; i < InputIconNames.Length; i++) {
+            int x = (i % InputIconColumns) * InputIconStride + 1;
+            int top = (i / InputIconColumns) * InputIconStride + 1;
+            frames.Add((InputIconNames[i], new Rect(x, height - top - InputIconSize, InputIconSize, InputIconSize)));
+        }
+        ApplyRects(importer, frames, Vector4.zero);
+    }
+
     /// <summary>Fatia a folha em quadros horizontais "{nome}_{i}", mantendo os IDs já existentes.</summary>
     private void Slice(TextureImporter importer, string name, int frameW, int frameH, Vector4 border) {
+        importer.GetSourceTextureWidthAndHeight(out int width, out int height);
+        int count = Mathf.Max(1, width / frameW);
+
+        var frames = new List<(string name, Rect rect)>();
+        for (int i = 0; i < count; i++) {
+            frames.Add(($"{name}_{i}", new Rect(i * frameW, height - frameH, frameW, frameH)));
+        }
+        ApplyRects(importer, frames, border);
+    }
+
+    /// <summary>Grava os retângulos no importer, mantendo os IDs dos sprites que já existiam com o mesmo nome.</summary>
+    private static void ApplyRects(TextureImporter importer, List<(string name, Rect rect)> frames, Vector4 border) {
         importer.spriteImportMode = SpriteImportMode.Multiple;
         var settings = new TextureImporterSettings();
         importer.ReadTextureSettings(settings);
         settings.spriteMeshType = SpriteMeshType.FullRect;
         settings.spriteExtrude = 0;
         importer.SetTextureSettings(settings);
-
-        importer.GetSourceTextureWidthAndHeight(out int width, out int height);
-        int count = Mathf.Max(1, width / frameW);
 
         var factory = new SpriteDataProviderFactories();
         factory.Init();
@@ -92,10 +127,9 @@ public class GeneratedArtImporter : AssetPostprocessor {
 
         Dictionary<string, SpriteRect> existing = provider.GetSpriteRects().ToDictionary(r => r.name);
         var rects = new List<SpriteRect>();
-        for (int i = 0; i < count; i++) {
-            string spriteName = $"{name}_{i}";
+        foreach ((string spriteName, Rect frame) in frames) {
             SpriteRect rect = existing.TryGetValue(spriteName, out SpriteRect old) ? old : new SpriteRect { name = spriteName, spriteID = GUID.Generate() };
-            rect.rect = new Rect(i * frameW, height - frameH, frameW, frameH);
+            rect.rect = frame;
             rect.alignment = SpriteAlignment.Center;
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.border = border;

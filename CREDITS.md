@@ -22,8 +22,4 @@ CC0 não exige crédito, mas a Kenney pede, e o jogo credita mesmo assim.
 
 ## Arte
 
-| Asset | Autor | Licença | Arquivos |
-|---|---|---|---|
-| Pacote de UI comprado no itch.io (**nome e autor a confirmar**) | ? | Licença de compra do itch.io | `Assets/Art/UI/UI assets (3x).png` (fundo do tabuleiro em `Grid.prefab` e na cena da partida) |
-
-O resto da arte (personagens, título, botões, grama, casas) é original, gerada por `Tools/art` e com o Claude (Anthropic) a pedido do autor.
+Toda a arte do jogo é original: personagens, tabuleiro e moldura, título, botões, painéis, ícones de controle, grama e casas. Ela foi feita com o Claude (Anthropic) a pedido do autor, com a ajuda dos scripts em `Tools/art` e dos builders em `Assets/Editor/Art`. Nenhum asset de arte de terceiros é usado no jogo.
